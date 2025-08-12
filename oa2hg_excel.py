@@ -12,17 +12,19 @@ from institutions import *
 from outputs import *
 from grands_data import *
 from sdgs_data import *
+from sources import*
+from dotenv import load_dotenv
+import os
 
-# --- Configuration ---
-# Your PostgreSQL database connection details
+load_dotenv(".env")
+
 DB_CONFIG = {
-    'host': 'localhost', # Or your database host (e.g., 'episteme-db.cintelligence.com')
-    'database': 'hexagraph', # Your database name
-    'user': 'postgres',   # Your database user
-    'password': 'Test', # Your database password
-    'port': '5432' # Default PostgreSQL port
+    'host': os.getenv("DB_HOST"),
+    'database': os.getenv("DB_NAME"),
+    'user': os.getenv("DB_USER"),
+    'password': os.getenv("DB_PASSWORD"),
+    'port': os.getenv("DB_PORT"),
 }
-
 # Path to your CSV file
 CSV_FILE_PATH = 'OpenAlex Data.csv' # Changed to CSV
 
@@ -1467,6 +1469,7 @@ def run_etl():
             grants_data_from_row = grand_data_process_row(row)
             output_data = outputs_process_row(row)
             sdgs_data_from_row = sdgs_process_row(row)
+            sources_data_from_row=source_process_row(row)
          
             
             # if not transformed_data[0]:
@@ -1489,9 +1492,9 @@ def run_etl():
                 if a.get('hg_id'):
                     collected_authors[a['hg_id']] = a
 
-            # for s in sources_data_from_row:
-            #     if s.get('hg_id'):
-            #         collected_sources[s['hg_id']] = s
+            for s in sources_data_from_row:
+                if s.get('hg_id'):
+                    collected_sources[s['hg_id']] = s
 
             # Institutions are collected here, but their `display_name`, `ror`, etc.,
             # might not be fully populated until a later join/enrichment step if
