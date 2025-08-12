@@ -1,0 +1,23 @@
+from utils import *;
+
+def grand_data_process_row(row):
+    grants_data_from_row = []
+    # Extracting grant-related data from the row
+    # Assuming 'grants.award_id' is a pipe-separated list of grant IDs
+    grant_award_ids = parse_list_string(safe_get_column(row, 'grants.award_id'))
+    grant_funders = parse_list_string(safe_get_column(row, 'grants.funder'))
+    grant_funder_display_names = parse_list_string(safe_get_column(row, 'grants.funder_display_name'))
+
+    for i in range(len(grant_award_ids)):
+        grant_award_id = grant_award_ids[i] if i < len(grant_award_ids) else None
+        if not grant_award_id:
+            continue
+        grant_hg_id = generate_hg_id(grant_award_id)
+        grants_data_from_row.append({
+            'hg_id': grant_hg_id,
+            'award_id': grant_award_id,
+            'funder': grant_funders[i] if i < len(grant_funders) else None,
+            'funder_display_name': grant_funder_display_names[i] if i < len(grant_funder_display_names) else None
+        })
+
+    return grants_data_from_row
