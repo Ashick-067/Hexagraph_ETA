@@ -11,6 +11,7 @@ from concepts import *
 from institutions import *
 from outputs import *
 from grands_data import *
+from sdgs_data import *
 
 # --- Configuration ---
 # Your PostgreSQL database connection details
@@ -1464,7 +1465,8 @@ def run_etl():
             concepts_data_from_row = concept_process_row(row)
             institutions_data_from_row = institutions_process_row(row)
             grants_data_from_row = grand_data_process_row(row)
-            output_data=outputs_process_row(row)
+            output_data = outputs_process_row(row)
+            sdgs_data_from_row = sdgs_process_row(row)
          
             
             # if not transformed_data[0]:
@@ -1505,9 +1507,9 @@ def run_etl():
                 if c_data.get('hg_id'):
                     collected_concepts[c_data['hg_id']] = c_data
 
-            # for s_data in sdgs_data_from_row:
-            #     if s_data.get('hg_id'):
-            #         collected_sdgs[s_data['hg_id']] = s_data
+            for s_data in sdgs_data_from_row:
+                if s_data.get('hg_id'):
+                    collected_sdgs[s_data['hg_id']] = s_data
             
             for g_data in grants_data_from_row:
                 if g_data.get('hg_id'):
