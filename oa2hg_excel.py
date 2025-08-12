@@ -9,6 +9,8 @@ import uuid
 from authors import *
 from concepts import *
 from institutions import *
+from outputs import *
+from grands_data import *
 
 # --- Configuration ---
 # Your PostgreSQL database connection details
@@ -1461,6 +1463,8 @@ def run_etl():
             authors_data_from_row = authors_process_row(row)
             concepts_data_from_row = concept_process_row(row)
             institutions_data_from_row = institutions_process_row(row)
+            grants_data_from_row = grand_data_process_row(row)
+            output_data=outputs_process_row(row)
          
             
             # if not transformed_data[0]:
@@ -1473,11 +1477,11 @@ def run_etl():
             # grants_data_from_row, output_grants_data_from_row, output_yearly_counts_data_from_row, output_external_ids_data_from_row = transformed_data
 
             # Explicitly define output_hg_id after unpacking output_data
-            # output_hg_id = output_data.get('hg_id')
+            output_hg_id = output_data.get('hg_id')
 
             # Collect main entities, ensuring uniqueness using their hg_id
-            # if output_data and output_hg_id:
-            #     collected_outputs[output_hg_id] = output_data
+            if output_data and output_hg_id:
+                collected_outputs[output_hg_id] = output_data
 
             for a in authors_data_from_row:
                 if a.get('hg_id'):
@@ -1505,9 +1509,9 @@ def run_etl():
             #     if s_data.get('hg_id'):
             #         collected_sdgs[s_data['hg_id']] = s_data
             
-            # for g_data in grants_data_from_row:
-            #     if g_data.get('hg_id'):
-            #         collected_grants[g_data['hg_id']] = g_data
+            for g_data in grants_data_from_row:
+                if g_data.get('hg_id'):
+                    collected_grants[g_data['hg_id']] = g_data
 
 
             # Collect join table data (using sets of frozensets for uniqueness)
