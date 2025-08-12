@@ -6,6 +6,10 @@ import os
 from datetime import datetime
 import uuid
 
+from authors import *
+from concepts import *
+from institutions import *
+
 # --- Configuration ---
 # Your PostgreSQL database connection details
 DB_CONFIG = {
@@ -273,12 +277,12 @@ ARRAY_COLUMNS = {
 
 # --- Helper Functions ---
 
-def generate_hg_id(openalex_id_string):
-    """Generates a deterministic UUID (hg_id) from an OpenAlex ID string."""
-    if not openalex_id_string:
-        return None
-    s_openalex_id_string = str(openalex_id_string).strip()
-    return str(uuid.uuid5(NAMESPACE_UUID, s_openalex_id_string))
+# def generate_hg_id(openalex_id_string):
+#     """Generates a deterministic UUID (hg_id) from an OpenAlex ID string."""
+#     if not openalex_id_string:
+#         return None
+#     s_openalex_id_string = str(openalex_id_string).strip()
+#     return str(uuid.uuid5(NAMESPACE_UUID, s_openalex_id_string))
 
 def create_tables(cursor, conn):
     """Creates necessary tables in the PostgreSQL database if they don't exist."""
@@ -295,679 +299,679 @@ def create_tables(cursor, conn):
     conn.commit()
     print("All table creation queries executed and committed.")
 
-def safe_get_column(row, column_name, default=None):
-    """Safely retrieves a column value from a pandas Series (row), handling NaNs and missing columns."""
-    if column_name in row.index and pd.notna(row[column_name]):
-        return row[column_name]
-    return default
+# def safe_get_column(row, column_name, default=None):
+#     """Safely retrieves a column value from a pandas Series (row), handling NaNs and missing columns."""
+#     if column_name in row.index and pd.notna(row[column_name]):
+#         return row[column_name]
+#     return default
 
-def safe_parse_int(value):
-    """Safely parses a value to an integer, returning None on failure."""
-    if pd.isna(value) or str(value).strip() == '':
-        return None
-    try:
-        return int(float(str(value).strip()))
-    except (ValueError, TypeError):
-        return None
+# def safe_parse_int(value):
+#     """Safely parses a value to an integer, returning None on failure."""
+#     if pd.isna(value) or str(value).strip() == '':
+#         return None
+#     try:
+#         return int(float(str(value).strip()))
+#     except (ValueError, TypeError):
+#         return None
 
-def safe_parse_numeric(value):
-    """Safely parses a value to a numeric (float), returning None on failure. Handles lists by taking first element."""
-    if pd.isna(value) or str(value).strip() == '':
-        return None
+# def safe_parse_numeric(value):
+#     """Safely parses a value to a numeric (float), returning None on failure. Handles lists by taking first element."""
+#     if pd.isna(value) or str(value).strip() == '':
+#         return None
     
-    if isinstance(value, list) and value:
-        value = value[0]
+#     if isinstance(value, list) and value:
+#         value = value[0]
 
-    try:
-        return float(str(value).strip())
-    except (ValueError, TypeError):
-        return None
+#     try:
+#         return float(str(value).strip())
+#     except (ValueError, TypeError):
+#         return None
 
-def safe_parse_boolean(value):
-    """Safely parses a value to a boolean, returning None for empty strings or unparseable values."""
-    if pd.isna(value) or str(value).strip() == '':
-        return None
-    s_value = str(value).strip().lower()
-    if s_value == 'true':
-        return True
-    elif s_value == 'false':
-        return False
-    return None # For anything else, return None (which maps to SQL NULL)
+# def safe_parse_boolean(value):
+#     """Safely parses a value to a boolean, returning None for empty strings or unparseable values."""
+#     if pd.isna(value) or str(value).strip() == '':
+#         return None
+#     s_value = str(value).strip().lower()
+#     if s_value == 'true':
+#         return True
+#     elif s_value == 'false':
+#         return False
+#     return None # For anything else, return None (which maps to SQL NULL)
 
 
-def parse_date(date_val):
-    """Parses a date value from Excel/CSV (DD-MM-YYYY orYYYY-MM-DD) or datetime object."""
-    if pd.isna(date_val):
-        return None
-    if isinstance(date_val, datetime):
-        return date_val.date()
-    s_date_val = str(date_val).strip()
-    try:
-        return datetime.strptime(s_date_val, '%d-%m-%Y').date()
-    except ValueError:
-        try:
-            return datetime.strptime(s_date_val, '%Y-%m-%d').date()
-        except ValueError:
-            return None
+# def parse_date(date_val):
+#     """Parses a date value from Excel/CSV (DD-MM-YYYY orYYYY-MM-DD) or datetime object."""
+#     if pd.isna(date_val):
+#         return None
+#     if isinstance(date_val, datetime):
+#         return date_val.date()
+#     s_date_val = str(date_val).strip()
+#     try:
+#         return datetime.strptime(s_date_val, '%d-%m-%Y').date()
+#     except ValueError:
+#         try:
+#             return datetime.strptime(s_date_val, '%Y-%m-%d').date()
+#         except ValueError:
+#             return None
 
-def parse_timestamp(ts_val):
-    """Parses a timestamp value from Excel/CSV (ISO format) or datetime object."""
-    if pd.isna(ts_val):
-        return None
-    if isinstance(ts_val, datetime):
-        return ts_val
-    s_ts_val = str(ts_val).strip()
-    try:
-        return datetime.fromisoformat(s_ts_val.replace('Z', '+00:00'))
-    except ValueError:
-        return None
+# def parse_timestamp(ts_val):
+#     """Parses a timestamp value from Excel/CSV (ISO format) or datetime object."""
+#     if pd.isna(ts_val):
+#         return None
+#     if isinstance(ts_val, datetime):
+#         return ts_val
+#     s_ts_val = str(ts_val).strip()
+#     try:
+#         return datetime.fromisoformat(s_ts_val.replace('Z', '+00:00'))
+#     except ValueError:
+#         return None
 
-def parse_jsonb_string(json_string):
-    """Parses a string that might contain a JSON object or array."""
-    if pd.isna(json_string) or str(json_string).strip() == '':
-        return None
-    try:
-        return json.loads(str(json_string))
-    except (json.JSONDecodeError, TypeError):
-        return None
+# def parse_jsonb_string(json_string):
+#     """Parses a string that might contain a JSON object or array."""
+#     if pd.isna(json_string) or str(json_string).strip() == '':
+#         return None
+#     try:
+#         return json.loads(str(json_string))
+#     except (json.JSONDecodeError, TypeError):
+#         return None
 
-def parse_list_string(list_string, delimiter='|'):
-    """
-    Parses a string representation of a list.
-    Tries JSON list, then pipe-separated, then comma-separated.
-    """
-    if pd.isna(list_string) or str(list_string).strip() == '':
-        return []
-    s_list_string = str(list_string).strip()
+# def parse_list_string(list_string, delimiter='|'):
+#     """
+#     Parses a string representation of a list.
+#     Tries JSON list, then pipe-separated, then comma-separated.
+#     """
+#     if pd.isna(list_string) or str(list_string).strip() == '':
+#         return []
+#     s_list_string = str(list_string).strip()
 
-    # 1. Try to parse as JSON list
-    try:
-        parsed = json.loads(s_list_string)
-        if isinstance(parsed, list):
-            return [str(item).strip() for item in parsed if pd.notna(item)]
-    except (json.JSONDecodeError, TypeError):
-        pass
+#     # 1. Try to parse as JSON list
+#     try:
+#         parsed = json.loads(s_list_string)
+#         if isinstance(parsed, list):
+#             return [str(item).strip() for item in parsed if pd.notna(item)]
+#     except (json.JSONDecodeError, TypeError):
+#         pass
 
-    # 2. If not JSON, try splitting by the specified delimiter (default '|')
-    if delimiter in s_list_string:
-        return [item.strip() for item in s_list_string.split(delimiter) if item.strip()]
+#     # 2. If not JSON, try splitting by the specified delimiter (default '|')
+#     if delimiter in s_list_string:
+#         return [item.strip() for item in s_list_string.split(delimiter) if item.strip()]
     
-    # 3. Fallback to comma-separated if no pipe
-    if ',' in s_list_string:
-        return [item.strip() for item in s_list_string.split(',') if item.strip()]
+#     # 3. Fallback to comma-separated if no pipe
+#     if ',' in s_list_string:
+#         return [item.strip() for item in s_list_string.split(',') if item.strip()]
 
-    return [s_list_string] if s_list_string else []
+#     return [s_list_string] if s_list_string else []
 
-def make_hashable_for_set(obj):
-    """
-    Recursively converts mutable objects (dicts, lists) into immutable ones (frozensets, tuples)
-    to allow the top-level object (usually a dict) to be hashed for set operations.
-    """
-    if isinstance(obj, dict):
-        return frozenset((k, make_hashable_for_set(v)) for k, v in sorted(obj.items()))
-    elif isinstance(obj, list):
-        return tuple(make_hashable_for_set(elem) for elem in obj)
-    else:
-        return obj # Base case: immutable type (e.g., string, int, float, None)
+# def make_hashable_for_set(obj):
+#     """
+#     Recursively converts mutable objects (dicts, lists) into immutable ones (frozensets, tuples)
+#     to allow the top-level object (usually a dict) to be hashed for set operations.
+#     """
+#     if isinstance(obj, dict):
+#         return frozenset((k, make_hashable_for_set(v)) for k, v in sorted(obj.items()))
+#     elif isinstance(obj, list):
+#         return tuple(make_hashable_for_set(elem) for elem in obj)
+#     else:
+#         return obj # Base case: immutable type (e.g., string, int, float, None)
 
-def process_excel_row(row):
-    """
-    Processes a single row from the CSV DataFrame and extracts data
-    for various EPISTEME tables.
-    """
-    output_data = {}
-    authors_data_from_row = [] 
-    sources_data_from_row = [] 
-    institutions_data_from_row = [] 
-    concepts_data_from_row = [] 
-    sdgs_data_from_row = [] 
-    grants_data_from_row = [] 
+# def process_excel_row(row):
+#     """
+#     Processes a single row from the CSV DataFrame and extracts data
+#     for various EPISTEME tables.
+#     """
+#     output_data = {}
+#     authors_data_from_row = [] 
+#     sources_data_from_row = [] 
+#     institutions_data_from_row = [] 
+#     concepts_data_from_row = [] 
+#     sdgs_data_from_row = [] 
+#     grants_data_from_row = [] 
 
-    output_authors_data_from_row = []
-    output_institutions_data_from_row = []
-    output_concepts_data_from_row = []
-    output_topics_data_from_row = []
-    output_keywords_data_from_row = []
-    output_mesh_terms_data_from_row = []
-    locations_records_from_row = []
-    output_sdgs_data_from_row = []
-    output_grants_data_from_row = []
-    output_yearly_counts_data_from_row = []
-    output_external_ids_data_from_row = []
+#     output_authors_data_from_row = []
+#     output_institutions_data_from_row = []
+#     output_concepts_data_from_row = []
+#     output_topics_data_from_row = []
+#     output_keywords_data_from_row = []
+#     output_mesh_terms_data_from_row = []
+#     locations_records_from_row = []
+#     output_sdgs_data_from_row = []
+#     output_grants_data_from_row = []
+#     output_yearly_counts_data_from_row = []
+#     output_external_ids_data_from_row = []
 
-    openalex_output_id = safe_get_column(row, 'id')
-    if not openalex_output_id:
-        return (output_data, authors_data_from_row, sources_data_from_row, output_authors_data_from_row,
-                institutions_data_from_row, output_institutions_data_from_row, concepts_data_from_row,
-                output_concepts_data_from_row, output_topics_data_from_row, output_keywords_data_from_row,
-                output_mesh_terms_data_from_row, locations_records_from_row, sdgs_data_from_row, output_sdgs_data_from_row,
-                grants_data_from_row, output_grants_data_from_row, output_yearly_counts_data_from_row, output_external_ids_data_from_row)
+#     openalex_output_id = safe_get_column(row, 'id')
+#     if not openalex_output_id:
+#         return (output_data, authors_data_from_row, sources_data_from_row, output_authors_data_from_row,
+#                 institutions_data_from_row, output_institutions_data_from_row, concepts_data_from_row,
+#                 output_concepts_data_from_row, output_topics_data_from_row, output_keywords_data_from_row,
+#                 output_mesh_terms_data_from_row, locations_records_from_row, sdgs_data_from_row, output_sdgs_data_from_row,
+#                 grants_data_from_row, output_grants_data_from_row, output_yearly_counts_data_from_row, output_external_ids_data_from_row)
 
-    output_hg_id = generate_hg_id(openalex_output_id)
+#     output_hg_id = generate_hg_id(openalex_output_id)
 
-    # --- Transform Outputs Data ---
-    output_data = {
-        'hg_id': output_hg_id,
-        'openalex_id': openalex_output_id,
-        'doi': safe_get_column(row, 'doi', '').replace('https://doi.org/', '') if safe_get_column(row, 'doi') else None,
-        'title': safe_get_column(row, 'title'),
-        'display_name': safe_get_column(row, 'display_name'),
-        'publication_year': safe_parse_int(safe_get_column(row, 'publication_year')),
-        'publication_date': parse_date(safe_get_column(row, 'publication_date')),
-        'language': safe_get_column(row, 'language'),
-        'type': safe_get_column(row, 'type'),
-        'type_crossref': safe_get_column(row, 'type_crossref'),
-        'cited_by_count': safe_parse_int(safe_get_column(row, 'cited_by_count')),
-        'abstract': safe_get_column(row, 'abstract'),
-        'is_retracted': safe_parse_boolean(safe_get_column(row, 'is_retracted')), # Apply safe_parse_boolean
-        'is_paratext': safe_parse_boolean(safe_get_column(row, 'is_paratext')),   # Apply safe_parse_boolean
-        'locations_count': safe_parse_int(safe_get_column(row, 'locations_count')),
-        'datasets_json': parse_jsonb_string(safe_get_column(row, 'datasets')),
-        'versions_json': parse_jsonb_string(safe_get_column(row, 'versions')),
-        'referenced_works_count': safe_parse_int(safe_get_column(row, 'referenced_works_count')),
-        'cited_by_api_url': safe_get_column(row, 'cited_by_api_url'),
-        'is_authors_truncated': safe_parse_boolean(safe_get_column(row, 'is_authors_truncated')), # Apply safe_parse_boolean
-        'apc_list_value': safe_parse_numeric(safe_get_column(row, 'apc_list.value')),
-        'apc_list_currency': safe_get_column(row, 'apc_list.currency'),
-        'apc_list_value_usd': safe_parse_numeric(safe_get_column(row, 'apc_list.value_usd')),
-        'apc_paid_value': safe_parse_numeric(safe_get_column(row, 'apc_paid.value')),
-        'apc_paid_currency': safe_get_column(row, 'apc_paid.currency'),
-        'apc_paid_value_usd': safe_parse_numeric(safe_get_column(row, 'apc_paid.value_usd')),
-        'open_access_is_oa': safe_parse_boolean(safe_get_column(row, 'open_access.is_oa')), # Apply safe_parse_boolean
-        'open_access_oa_status': safe_get_column(row, 'open_access.oa_status'),
-        'open_access_oa_url': safe_get_column(row, 'open_access.oa_url'),
-        'open_access_any_repository_has_fulltext': safe_parse_boolean(safe_get_column(row, 'open_access.any_repository_has_fulltext')), # Apply safe_parse_boolean
-        'citation_normalized_percentile_value': safe_parse_numeric(safe_get_column(row, 'citation_normalized_percentile.value')),
-        'citation_normalized_percentile_is_in_top_1_percent': safe_parse_boolean(safe_get_column(row, 'citation_normalized_percentile.is_in_top_1_percent')), # Apply safe_parse_boolean
-        'citation_normalized_percentile_is_in_top_10_percent': safe_parse_boolean(safe_get_column(row, 'citation_normalized_percentile.is_in_top_10_percent')), # Apply safe_parse_boolean
-        'cited_by_percentile_year_min': safe_parse_int(safe_get_column(row, 'cited_by_percentile_year.min')),
-        'cited_by_percentile_year_max': safe_parse_int(safe_get_column(row, 'cited_by_percentile_year.max')),
-        'biblio_volume': safe_get_column(row, 'biblio.volume'),
-        'biblio_issue': safe_get_column(row, 'biblio.issue'),
-        'biblio_first_page': safe_get_column(row, 'biblio.first_page'),
-        'biblio_last_page': safe_get_column(row, 'biblio.last_page'),
-        'updated_date': parse_timestamp(safe_get_column(row, 'updated_date')),
-        'created_date': parse_date(safe_get_column(row, 'created_date')),
-        'countries_distinct_count': safe_parse_int(safe_get_column(row, 'countries_distinct_count')),
-        'institutions_distinct_count': safe_parse_int(safe_get_column(row, 'institutions_distinct_count'))
-    }
+#     # --- Transform Outputs Data ---
+#     output_data = {
+#         'hg_id': output_hg_id,
+#         'openalex_id': openalex_output_id,
+#         'doi': safe_get_column(row, 'doi', '').replace('https://doi.org/', '') if safe_get_column(row, 'doi') else None,
+#         'title': safe_get_column(row, 'title'),
+#         'display_name': safe_get_column(row, 'display_name'),
+#         'publication_year': safe_parse_int(safe_get_column(row, 'publication_year')),
+#         'publication_date': parse_date(safe_get_column(row, 'publication_date')),
+#         'language': safe_get_column(row, 'language'),
+#         'type': safe_get_column(row, 'type'),
+#         'type_crossref': safe_get_column(row, 'type_crossref'),
+#         'cited_by_count': safe_parse_int(safe_get_column(row, 'cited_by_count')),
+#         'abstract': safe_get_column(row, 'abstract'),
+#         'is_retracted': safe_parse_boolean(safe_get_column(row, 'is_retracted')), # Apply safe_parse_boolean
+#         'is_paratext': safe_parse_boolean(safe_get_column(row, 'is_paratext')),   # Apply safe_parse_boolean
+#         'locations_count': safe_parse_int(safe_get_column(row, 'locations_count')),
+#         'datasets_json': parse_jsonb_string(safe_get_column(row, 'datasets')),
+#         'versions_json': parse_jsonb_string(safe_get_column(row, 'versions')),
+#         'referenced_works_count': safe_parse_int(safe_get_column(row, 'referenced_works_count')),
+#         'cited_by_api_url': safe_get_column(row, 'cited_by_api_url'),
+#         'is_authors_truncated': safe_parse_boolean(safe_get_column(row, 'is_authors_truncated')), # Apply safe_parse_boolean
+#         'apc_list_value': safe_parse_numeric(safe_get_column(row, 'apc_list.value')),
+#         'apc_list_currency': safe_get_column(row, 'apc_list.currency'),
+#         'apc_list_value_usd': safe_parse_numeric(safe_get_column(row, 'apc_list.value_usd')),
+#         'apc_paid_value': safe_parse_numeric(safe_get_column(row, 'apc_paid.value')),
+#         'apc_paid_currency': safe_get_column(row, 'apc_paid.currency'),
+#         'apc_paid_value_usd': safe_parse_numeric(safe_get_column(row, 'apc_paid.value_usd')),
+#         'open_access_is_oa': safe_parse_boolean(safe_get_column(row, 'open_access.is_oa')), # Apply safe_parse_boolean
+#         'open_access_oa_status': safe_get_column(row, 'open_access.oa_status'),
+#         'open_access_oa_url': safe_get_column(row, 'open_access.oa_url'),
+#         'open_access_any_repository_has_fulltext': safe_parse_boolean(safe_get_column(row, 'open_access.any_repository_has_fulltext')), # Apply safe_parse_boolean
+#         'citation_normalized_percentile_value': safe_parse_numeric(safe_get_column(row, 'citation_normalized_percentile.value')),
+#         'citation_normalized_percentile_is_in_top_1_percent': safe_parse_boolean(safe_get_column(row, 'citation_normalized_percentile.is_in_top_1_percent')), # Apply safe_parse_boolean
+#         'citation_normalized_percentile_is_in_top_10_percent': safe_parse_boolean(safe_get_column(row, 'citation_normalized_percentile.is_in_top_10_percent')), # Apply safe_parse_boolean
+#         'cited_by_percentile_year_min': safe_parse_int(safe_get_column(row, 'cited_by_percentile_year.min')),
+#         'cited_by_percentile_year_max': safe_parse_int(safe_get_column(row, 'cited_by_percentile_year.max')),
+#         'biblio_volume': safe_get_column(row, 'biblio.volume'),
+#         'biblio_issue': safe_get_column(row, 'biblio.issue'),
+#         'biblio_first_page': safe_get_column(row, 'biblio.first_page'),
+#         'biblio_last_page': safe_get_column(row, 'biblio.last_page'),
+#         'updated_date': parse_timestamp(safe_get_column(row, 'updated_date')),
+#         'created_date': parse_date(safe_get_column(row, 'created_date')),
+#         'countries_distinct_count': safe_parse_int(safe_get_column(row, 'countries_distinct_count')),
+#         'institutions_distinct_count': safe_parse_int(safe_get_column(row, 'institutions_distinct_count'))
+#     }
 
-    # --- Output External IDs ---
-    output_external_ids_data_from_row = []
-    if safe_get_column(row, 'ids.doi'):
-        output_external_ids_data_from_row.append({'output_id': output_hg_id, 'id_type': 'doi', 'external_id': str(safe_get_column(row, 'ids.doi')).replace('https://doi.org/', '')})
-    if safe_get_column(row, 'ids.mag'):
-        output_external_ids_data_from_row.append({'output_id': output_hg_id, 'id_type': 'mag', 'external_id': str(safe_get_column(row, 'ids.mag'))})
-    if safe_get_column(row, 'ids.pmid'):
-        output_external_ids_data_from_row.append({'output_id': output_hg_id, 'id_type': 'pmid', 'external_id': str(safe_get_column(row, 'ids.pmid'))})
-    if safe_get_column(row, 'ids.pmcid'):
-        output_external_ids_data_from_row.append({'output_id': output_hg_id, 'id_type': 'pmcid', 'external_id': str(safe_get_column(row, 'ids.pmcid'))})
+#     # --- Output External IDs ---
+#     output_external_ids_data_from_row = []
+#     if safe_get_column(row, 'ids.doi'):
+#         output_external_ids_data_from_row.append({'output_id': output_hg_id, 'id_type': 'doi', 'external_id': str(safe_get_column(row, 'ids.doi')).replace('https://doi.org/', '')})
+#     if safe_get_column(row, 'ids.mag'):
+#         output_external_ids_data_from_row.append({'output_id': output_hg_id, 'id_type': 'mag', 'external_id': str(safe_get_column(row, 'ids.mag'))})
+#     if safe_get_column(row, 'ids.pmid'):
+#         output_external_ids_data_from_row.append({'output_id': output_hg_id, 'id_type': 'pmid', 'external_id': str(safe_get_column(row, 'ids.pmid'))})
+#     if safe_get_column(row, 'ids.pmcid'):
+#         output_external_ids_data_from_row.append({'output_id': output_hg_id, 'id_type': 'pmcid', 'external_id': str(safe_get_column(row, 'ids.pmcid'))})
 
-    # --- Authors and Output_Authors Data ---
-    author_ids = parse_list_string(safe_get_column(row, 'authorships.author.id'))
-    author_display_names = parse_list_string(safe_get_column(row, 'authorships.author.display_name'))
-    author_orcids = parse_list_string(safe_get_column(row, 'authorships.author.orcid'))
-    author_positions = parse_list_string(safe_get_column(row, 'authorships.author_position'))
-    is_correspondings = parse_list_string(safe_get_column(row, 'authorships.is_corresponding'))
-    raw_author_names = parse_list_string(safe_get_column(row, 'authorships.raw_author_name'))
-    authors_updated_dates = parse_timestamp(safe_get_column(row, 'updated_date'))
-    authors_created_dates = parse_date(safe_get_column(row, 'created_date'))
+#     # --- Authors and Output_Authors Data ---
+#     author_ids = parse_list_string(safe_get_column(row, 'authorships.author.id'))
+#     author_display_names = parse_list_string(safe_get_column(row, 'authorships.author.display_name'))
+#     author_orcids = parse_list_string(safe_get_column(row, 'authorships.author.orcid'))
+#     author_positions = parse_list_string(safe_get_column(row, 'authorships.author_position'))
+#     is_correspondings = parse_list_string(safe_get_column(row, 'authorships.is_corresponding'))
+#     raw_author_names = parse_list_string(safe_get_column(row, 'authorships.raw_author_name'))
+#     authors_updated_dates = parse_timestamp(safe_get_column(row, 'updated_date'))
+#     authors_created_dates = parse_date(safe_get_column(row, 'created_date'))
     
-    raw_affiliation_strings_raw_list = parse_list_string(safe_get_column(row, 'authorships.raw_affiliation_strings'))
-    raw_affiliation_strings_processed = []
-    for aff_str_item in raw_affiliation_strings_raw_list:
-        parsed_aff_json = parse_jsonb_string(aff_str_item)
-        if isinstance(parsed_aff_json, list):
-            raw_affiliation_strings_processed.append(parsed_aff_json)
-        else:
-            # Ensure that even if parsed_aff_json is a dict, it's wrapped in a list for TEXT[]
-            raw_affiliation_strings_processed.append([aff_str_item])
+#     raw_affiliation_strings_raw_list = parse_list_string(safe_get_column(row, 'authorships.raw_affiliation_strings'))
+#     raw_affiliation_strings_processed = []
+#     for aff_str_item in raw_affiliation_strings_raw_list:
+#         parsed_aff_json = parse_jsonb_string(aff_str_item)
+#         if isinstance(parsed_aff_json, list):
+#             raw_affiliation_strings_processed.append(parsed_aff_json)
+#         else:
+#             # Ensure that even if parsed_aff_json is a dict, it's wrapped in a list for TEXT[]
+#             raw_affiliation_strings_processed.append([aff_str_item])
     
-    # Process authorships, but defer institution collection to a dedicated section
-    for i in range(len(author_ids)):
-        author_openalex_id = author_ids[i] if i < len(author_ids) else None
-        if not author_openalex_id:
-            continue
+#     # Process authorships, but defer institution collection to a dedicated section
+#     for i in range(len(author_ids)):
+#         author_openalex_id = author_ids[i] if i < len(author_ids) else None
+#         if not author_openalex_id:
+#             continue
 
-        author_hg_id = generate_hg_id(author_openalex_id)
+#         author_hg_id = generate_hg_id(author_openalex_id)
         
-        authors_data_from_row.append({
-            'hg_id': author_hg_id,
-            'openalex_id': author_openalex_id,
-            'display_name': author_display_names[i] if i < len(author_display_names) else None,
-            'orcid': author_orcids[i] if i < len(author_orcids) else None,
-            'updated_date': authors_updated_dates,
-            'created_date': authors_created_dates
-        })
+#         authors_data_from_row.append({
+#             'hg_id': author_hg_id,
+#             'openalex_id': author_openalex_id,
+#             'display_name': author_display_names[i] if i < len(author_display_names) else None,
+#             'orcid': author_orcids[i] if i < len(author_orcids) else None,
+#             'updated_date': authors_updated_dates,
+#             'created_date': authors_created_dates
+#         })
 
-        output_authors_data_from_row.append({
-            'output_id': output_hg_id,
-            'author_id': author_hg_id,
-            'author_position': author_positions[i] if i < len(author_positions) else None,
-            'is_corresponding': safe_parse_boolean(is_correspondings[i]) if i < len(is_correspondings) else False, # Apply safe_parse_boolean
-            'raw_author_name': raw_author_names[i] if i < len(raw_author_names) else None,
-            'raw_affiliation_strings': raw_affiliation_strings_processed[i] if i < len(raw_affiliation_strings_processed) else []
-        })
+#         output_authors_data_from_row.append({
+#             'output_id': output_hg_id,
+#             'author_id': author_hg_id,
+#             'author_position': author_positions[i] if i < len(author_positions) else None,
+#             'is_corresponding': safe_parse_boolean(is_correspondings[i]) if i < len(is_correspondings) else False, # Apply safe_parse_boolean
+#             'raw_author_name': raw_author_names[i] if i < len(raw_author_names) else None,
+#             'raw_affiliation_strings': raw_affiliation_strings_processed[i] if i < len(raw_affiliation_strings_processed) else []
+#         })
 
-    # --- Process Institutions Data (from authorships.affiliations and corresponding_institution_ids) ---
+#     # --- Process Institutions Data (from authorships.affiliations and corresponding_institution_ids) ---
     
-    # 1. From authorships.affiliations
-    authorships_affiliations_raw = safe_get_column(row, 'authorships.institutions')
-    parsed_affiliations_list = parse_list_string(authorships_affiliations_raw) 
+#     # 1. From authorships.affiliations
+#     authorships_affiliations_raw = safe_get_column(row, 'authorships.institutions')
+#     parsed_affiliations_list = parse_list_string(authorships_affiliations_raw) 
 
-    for aff_json_str in parsed_affiliations_list:
-        parsed_aff_obj = parse_jsonb_string(aff_json_str.replace("'", "\""))
+#     for aff_json_str in parsed_affiliations_list:
+#         parsed_aff_obj = parse_jsonb_string(aff_json_str.replace("'", "\""))
         
-        if parsed_aff_obj and isinstance(parsed_aff_obj, dict):
-            # Prioritize direct institution details if present
-            inst_openalex_id = parsed_aff_obj.get('id')
-            inst_display_name = parsed_aff_obj.get('display_name')
-            inst_ror = parsed_aff_obj.get('ror')
-            inst_country_code = parsed_aff_obj.get('country_code')
-            inst_type = parsed_aff_obj.get('type')
+#         if parsed_aff_obj and isinstance(parsed_aff_obj, dict):
+#             # Prioritize direct institution details if present
+#             inst_openalex_id = parsed_aff_obj.get('id')
+#             inst_display_name = parsed_aff_obj.get('display_name')
+#             inst_ror = parsed_aff_obj.get('ror')
+#             inst_country_code = parsed_aff_obj.get('country_code')
+#             inst_type = parsed_aff_obj.get('type')
             
-            # Correctly handle lineage which might be a list or a string needing parsing
-            inst_lineage_raw = parsed_aff_obj.get('lineage')
-            if isinstance(inst_lineage_raw, list):
-                inst_lineage = [str(item).strip() for item in inst_lineage_raw if pd.notna(item)]
-            elif isinstance(inst_lineage_raw, str):
-                inst_lineage = parse_list_string(inst_lineage_raw)
-            else:
-                inst_lineage = [] # Default if not found or invalid type
+#             # Correctly handle lineage which might be a list or a string needing parsing
+#             inst_lineage_raw = parsed_aff_obj.get('lineage')
+#             if isinstance(inst_lineage_raw, list):
+#                 inst_lineage = [str(item).strip() for item in inst_lineage_raw if pd.notna(item)]
+#             elif isinstance(inst_lineage_raw, str):
+#                 inst_lineage = parse_list_string(inst_lineage_raw)
+#             else:
+#                 inst_lineage = [] # Default if not found or invalid type
 
 
-            if inst_openalex_id:
-                inst_hg_id = generate_hg_id(inst_openalex_id)
-                institutions_data_from_row.append({
-                    'hg_id': inst_hg_id,
-                    'openalex_id': inst_openalex_id,
-                    'display_name': inst_display_name,
-                    'ror': inst_ror,
-                    'country_code': inst_country_code,
-                    'type': inst_type,
-                    'lineage': inst_lineage
-                })
-                output_institutions_data_from_row.append({
-                    'output_id': output_hg_id,
-                    'institution_id': inst_hg_id
-                })
+#             if inst_openalex_id:
+#                 inst_hg_id = generate_hg_id(inst_openalex_id)
+#                 institutions_data_from_row.append({
+#                     'hg_id': inst_hg_id,
+#                     'openalex_id': inst_openalex_id,
+#                     'display_name': inst_display_name,
+#                     'ror': inst_ror,
+#                     'country_code': inst_country_code,
+#                     'type': inst_type,
+#                     'lineage': inst_lineage
+#                 })
+#                 output_institutions_data_from_row.append({
+#                     'output_id': output_hg_id,
+#                     'institution_id': inst_hg_id
+#                 })
             
-            # Fallback for older or different format where only 'institution_ids' is nested
-            # This handles cases where raw_affiliation_string might be present and institution_ids is nested
-            elif 'institution_ids' in parsed_aff_obj and isinstance(parsed_aff_obj.get('institution_ids'), list):
-                for nested_inst_id in parsed_aff_obj['institution_ids']:
-                    if nested_inst_id:
-                        nested_inst_hg_id = generate_hg_id(nested_inst_id)
-                        institutions_data_from_row.append({
-                            'hg_id': nested_inst_hg_id,
-                            'openalex_id': nested_inst_id,
-                            'display_name': None, # Not available at this level
-                            'ror': None,
-                            'country_code': None,
-                            'type': None,
-                            'lineage': []
-                        })
-                        output_institutions_data_from_row.append({
-                            'output_id': output_hg_id,
-                            'institution_id': nested_inst_hg_id
-                        })
+#             # Fallback for older or different format where only 'institution_ids' is nested
+#             # This handles cases where raw_affiliation_string might be present and institution_ids is nested
+#             elif 'institution_ids' in parsed_aff_obj and isinstance(parsed_aff_obj.get('institution_ids'), list):
+#                 for nested_inst_id in parsed_aff_obj['institution_ids']:
+#                     if nested_inst_id:
+#                         nested_inst_hg_id = generate_hg_id(nested_inst_id)
+#                         institutions_data_from_row.append({
+#                             'hg_id': nested_inst_hg_id,
+#                             'openalex_id': nested_inst_id,
+#                             'display_name': None, # Not available at this level
+#                             'ror': None,
+#                             'country_code': None,
+#                             'type': None,
+#                             'lineage': []
+#                         })
+#                         output_institutions_data_from_row.append({
+#                             'output_id': output_hg_id,
+#                             'institution_id': nested_inst_hg_id
+#                         })
                         
-    # 2. From corresponding_institution_ids (if it exists and is a direct OpenAlex ID)
-    corresponding_inst_ids_raw = safe_get_column(row, 'corresponding_institution_ids')
-    corresponding_inst_ids = parse_list_string(corresponding_inst_ids_raw) # Assuming it's a pipe-separated list of IDs
+#     # 2. From corresponding_institution_ids (if it exists and is a direct OpenAlex ID)
+#     corresponding_inst_ids_raw = safe_get_column(row, 'corresponding_institution_ids')
+#     corresponding_inst_ids = parse_list_string(corresponding_inst_ids_raw) # Assuming it's a pipe-separated list of IDs
 
-    for inst_openalex_id in corresponding_inst_ids:
-        if inst_openalex_id:
-            inst_hg_id = generate_hg_id(inst_openalex_id)
-            institutions_data_from_row.append({
-                'hg_id': inst_hg_id,
-                'openalex_id': inst_openalex_id,
-                'display_name': None, # Placeholder, as this column only contains the ID
-                'ror': None,
-                'country_code': None,
-                'type': None,
-                'lineage': []
-            })
-            output_institutions_data_from_row.append({
-                'output_id': output_hg_id,
-                'institution_id': inst_hg_id
-            })
+#     for inst_openalex_id in corresponding_inst_ids:
+#         if inst_openalex_id:
+#             inst_hg_id = generate_hg_id(inst_openalex_id)
+#             institutions_data_from_row.append({
+#                 'hg_id': inst_hg_id,
+#                 'openalex_id': inst_openalex_id,
+#                 'display_name': None, # Placeholder, as this column only contains the ID
+#                 'ror': None,
+#                 'country_code': None,
+#                 'type': None,
+#                 'lineage': []
+#             })
+#             output_institutions_data_from_row.append({
+#                 'output_id': output_hg_id,
+#                 'institution_id': inst_hg_id
+#             })
 
-    # --- Transform Sources and Locations Data ---
-    loc_is_oas = parse_list_string(safe_get_column(row, 'locations.is_oa'), delimiter='|')
-    loc_landing_page_urls = parse_list_string(safe_get_column(row, 'locations.landing_page_url'), delimiter='|')
-    loc_pdf_urls = parse_list_string(safe_get_column(row, 'locations.pdf_url'), delimiter='|')
-    loc_licenses = parse_list_string(safe_get_column(row, 'locations.license'), delimiter='|')
-    loc_license_ids = parse_list_string(safe_get_column(row, 'locations.license_id'), delimiter='|')
-    loc_versions = parse_list_string(safe_get_column(row, 'locations.version'), delimiter='|')
-    loc_is_accepteds = parse_list_string(safe_get_column(row, 'locations.is_accepted'), delimiter='|')
-    loc_is_publisheds = parse_list_string(safe_get_column(row, 'locations.is_published'), delimiter='|')
-    loc_source_ids = parse_list_string(safe_get_column(row, 'locations.source.id'), delimiter='|')
-    loc_source_display_names = parse_list_string(safe_get_column(row, 'locations.source.display_name'), delimiter='|')
-    loc_source_issn_ls = parse_list_string(safe_get_column(row, 'locations.source.issn_l'), delimiter='|')
-    loc_source_issns = parse_list_string(safe_get_column(row, 'locations.source.issn'), delimiter='|')
-    loc_source_is_oas = parse_list_string(safe_get_column(row, 'locations.source.is_oa'), delimiter='|')
-    loc_source_is_in_doajs = parse_list_string(safe_get_column(row, 'locations.source.is_in_doaj'), delimiter='|')
-    loc_source_is_indexed_in_scopus = parse_list_string(safe_get_column(row, 'locations.source.is_indexed_in_scopus'), delimiter='|')
-    loc_source_is_cores = parse_list_string(safe_get_column(row, 'locations.source.is_core'), delimiter='|')
-    loc_source_host_organizations = parse_list_string(safe_get_column(row, 'locations.source.host_organization'), delimiter='|')
-    loc_source_host_organization_names = parse_list_string(safe_get_column(row, 'locations.source.host_organization_name'), delimiter='|')
-    loc_source_host_organization_lineages = parse_list_string(safe_get_column(row, 'locations.source.host_organization_lineage'), delimiter='|')
-    loc_source_host_organization_lineage_names = parse_list_string(safe_get_column(row, 'locations.source.host_organization_lineage_names'), delimiter='|')
-    loc_source_types = parse_list_string(safe_get_column(row, 'locations.source.type'), delimiter='|')
+#     # --- Transform Sources and Locations Data ---
+#     loc_is_oas = parse_list_string(safe_get_column(row, 'locations.is_oa'), delimiter='|')
+#     loc_landing_page_urls = parse_list_string(safe_get_column(row, 'locations.landing_page_url'), delimiter='|')
+#     loc_pdf_urls = parse_list_string(safe_get_column(row, 'locations.pdf_url'), delimiter='|')
+#     loc_licenses = parse_list_string(safe_get_column(row, 'locations.license'), delimiter='|')
+#     loc_license_ids = parse_list_string(safe_get_column(row, 'locations.license_id'), delimiter='|')
+#     loc_versions = parse_list_string(safe_get_column(row, 'locations.version'), delimiter='|')
+#     loc_is_accepteds = parse_list_string(safe_get_column(row, 'locations.is_accepted'), delimiter='|')
+#     loc_is_publisheds = parse_list_string(safe_get_column(row, 'locations.is_published'), delimiter='|')
+#     loc_source_ids = parse_list_string(safe_get_column(row, 'locations.source.id'), delimiter='|')
+#     loc_source_display_names = parse_list_string(safe_get_column(row, 'locations.source.display_name'), delimiter='|')
+#     loc_source_issn_ls = parse_list_string(safe_get_column(row, 'locations.source.issn_l'), delimiter='|')
+#     loc_source_issns = parse_list_string(safe_get_column(row, 'locations.source.issn'), delimiter='|')
+#     loc_source_is_oas = parse_list_string(safe_get_column(row, 'locations.source.is_oa'), delimiter='|')
+#     loc_source_is_in_doajs = parse_list_string(safe_get_column(row, 'locations.source.is_in_doaj'), delimiter='|')
+#     loc_source_is_indexed_in_scopus = parse_list_string(safe_get_column(row, 'locations.source.is_indexed_in_scopus'), delimiter='|')
+#     loc_source_is_cores = parse_list_string(safe_get_column(row, 'locations.source.is_core'), delimiter='|')
+#     loc_source_host_organizations = parse_list_string(safe_get_column(row, 'locations.source.host_organization'), delimiter='|')
+#     loc_source_host_organization_names = parse_list_string(safe_get_column(row, 'locations.source.host_organization_name'), delimiter='|')
+#     loc_source_host_organization_lineages = parse_list_string(safe_get_column(row, 'locations.source.host_organization_lineage'), delimiter='|')
+#     loc_source_host_organization_lineage_names = parse_list_string(safe_get_column(row, 'locations.source.host_organization_lineage_names'), delimiter='|')
+#     loc_source_types = parse_list_string(safe_get_column(row, 'locations.source.type'), delimiter='|')
 
-    max_loc_len = max(len(loc_is_oas), len(loc_landing_page_urls), len(loc_pdf_urls), len(loc_source_ids))
+#     max_loc_len = max(len(loc_is_oas), len(loc_landing_page_urls), len(loc_pdf_urls), len(loc_source_ids))
 
-    for i in range(max_loc_len):
-        source_hg_id = None
-        openalex_source_id = loc_source_ids[i] if i < len(loc_source_ids) else None
+#     for i in range(max_loc_len):
+#         source_hg_id = None
+#         openalex_source_id = loc_source_ids[i] if i < len(loc_source_ids) else None
 
-        if openalex_source_id:
-            source_hg_id = generate_hg_id(openalex_source_id)
-            sources_data_from_row.append({
-                'hg_id': source_hg_id,
-                'openalex_id': openalex_source_id,
-                'display_name': loc_source_display_names[i] if i < len(loc_source_display_names) else None,
-                'issn_l': loc_source_issn_ls[i] if i < len(loc_source_issn_ls) else None,
-                'issn': parse_list_string(loc_source_issns[i], delimiter=';') if i < len(loc_source_issns) else [],
-                'type': loc_source_types[i] if i < len(loc_source_types) else None,
-                'is_oa': safe_parse_boolean(loc_source_is_oas[i]) if i < len(loc_source_is_oas) else None, # Apply safe_parse_boolean
-                'is_in_doaj': safe_parse_boolean(loc_source_is_in_doajs[i]) if i < len(loc_source_is_in_doajs) else None, # Apply safe_parse_boolean
-                'is_indexed_in_scopus': safe_parse_boolean(loc_source_is_indexed_in_scopus[i]) if i < len(loc_source_is_indexed_in_scopus) else None, # Apply safe_parse_boolean
-                'is_core': safe_parse_boolean(loc_source_is_cores[i]) if i < len(loc_source_is_cores) else None, # Apply safe_parse_boolean
-                'host_organization': loc_source_host_organizations[i] if i < len(loc_source_host_organizations) else None,
-                'host_organization_name': loc_source_host_organization_names[i] if i < len(loc_source_host_organization_names) else None,
-                'host_organization_lineage': parse_list_string(loc_source_host_organization_lineages[i]) if i < len(loc_source_host_organization_lineages) else [],
-                'host_organization_lineage_names': parse_list_string(loc_source_host_organization_lineage_names[i]) if i < len(loc_source_host_organization_lineages) else []
-            })
+#         if openalex_source_id:
+#             source_hg_id = generate_hg_id(openalex_source_id)
+#             sources_data_from_row.append({
+#                 'hg_id': source_hg_id,
+#                 'openalex_id': openalex_source_id,
+#                 'display_name': loc_source_display_names[i] if i < len(loc_source_display_names) else None,
+#                 'issn_l': loc_source_issn_ls[i] if i < len(loc_source_issn_ls) else None,
+#                 'issn': parse_list_string(loc_source_issns[i], delimiter=';') if i < len(loc_source_issns) else [],
+#                 'type': loc_source_types[i] if i < len(loc_source_types) else None,
+#                 'is_oa': safe_parse_boolean(loc_source_is_oas[i]) if i < len(loc_source_is_oas) else None, # Apply safe_parse_boolean
+#                 'is_in_doaj': safe_parse_boolean(loc_source_is_in_doajs[i]) if i < len(loc_source_is_in_doajs) else None, # Apply safe_parse_boolean
+#                 'is_indexed_in_scopus': safe_parse_boolean(loc_source_is_indexed_in_scopus[i]) if i < len(loc_source_is_indexed_in_scopus) else None, # Apply safe_parse_boolean
+#                 'is_core': safe_parse_boolean(loc_source_is_cores[i]) if i < len(loc_source_is_cores) else None, # Apply safe_parse_boolean
+#                 'host_organization': loc_source_host_organizations[i] if i < len(loc_source_host_organizations) else None,
+#                 'host_organization_name': loc_source_host_organization_names[i] if i < len(loc_source_host_organization_names) else None,
+#                 'host_organization_lineage': parse_list_string(loc_source_host_organization_lineages[i]) if i < len(loc_source_host_organization_lineages) else [],
+#                 'host_organization_lineage_names': parse_list_string(loc_source_host_organization_lineage_names[i]) if i < len(loc_source_host_organization_lineages) else []
+#             })
         
-        landing_page = loc_landing_page_urls[i] if i < len(loc_landing_page_urls) else None
-        pdf_url = loc_pdf_urls[i] if i < len(loc_pdf_urls) else None
+#         landing_page = loc_landing_page_urls[i] if i < len(loc_landing_page_urls) else None
+#         pdf_url = loc_pdf_urls[i] if i < len(loc_pdf_urls) else None
 
-        if landing_page or pdf_url:
-            location_record = {
-                'output_id': output_hg_id,
-                'is_oa': safe_parse_boolean(loc_is_oas[i]) if i < len(loc_is_oas) else None, # Apply safe_parse_boolean
-                'landing_page_url': landing_page,
-                'pdf_url': pdf_url,
-                'license': loc_licenses[i] if i < len(loc_licenses) else None,
-                'license_id': loc_license_ids[i] if i < len(loc_license_ids) else None,
-                'version': loc_versions[i] if i < len(loc_versions) else None,
-                'is_accepted': safe_parse_boolean(loc_is_accepteds[i]) if i < len(loc_is_accepteds) else None, # Apply safe_parse_boolean
-                'is_published': safe_parse_boolean(loc_is_publisheds[i]) if i < len(loc_is_publisheds) else None, # Apply safe_parse_boolean
-                'source_id': source_hg_id,
-                'location_type': 'other'
-            }
-            locations_records_from_row.append(location_record)
+#         if landing_page or pdf_url:
+#             location_record = {
+#                 'output_id': output_hg_id,
+#                 'is_oa': safe_parse_boolean(loc_is_oas[i]) if i < len(loc_is_oas) else None, # Apply safe_parse_boolean
+#                 'landing_page_url': landing_page,
+#                 'pdf_url': pdf_url,
+#                 'license': loc_licenses[i] if i < len(loc_licenses) else None,
+#                 'license_id': loc_license_ids[i] if i < len(loc_license_ids) else None,
+#                 'version': loc_versions[i] if i < len(loc_versions) else None,
+#                 'is_accepted': safe_parse_boolean(loc_is_accepteds[i]) if i < len(loc_is_accepteds) else None, # Apply safe_parse_boolean
+#                 'is_published': safe_parse_boolean(loc_is_publisheds[i]) if i < len(loc_is_publisheds) else None, # Apply safe_parse_boolean
+#                 'source_id': source_hg_id,
+#                 'location_type': 'other'
+#             }
+#             locations_records_from_row.append(location_record)
 
-    openalex_primary_source_id = safe_get_column(row, 'primary_location.source.id')
-    primary_source_hg_id = None
-    if openalex_primary_source_id:
-        primary_source_hg_id = generate_hg_id(openalex_primary_source_id)
-        sources_data_from_row.append({
-            'hg_id': primary_source_hg_id,
-            'openalex_id': openalex_primary_source_id,
-            'display_name': safe_get_column(row, 'primary_location.source.display_name'),
-            'issn_l': safe_get_column(row, 'primary_location.source.issn_l'),
-            'issn': parse_list_string(safe_get_column(row, 'primary_location.source.issn'), delimiter=';'),
-            'type': safe_get_column(row, 'primary_location.source.type'),
-            'is_oa': safe_parse_boolean(safe_get_column(row, 'primary_location.source.is_oa')), # Apply safe_parse_boolean
-            'is_in_doaj': safe_parse_boolean(safe_get_column(row, 'primary_location.source.is_in_doaj')), # Apply safe_parse_boolean
-            'is_indexed_in_scopus': safe_parse_boolean(safe_get_column(row, 'primary_location.source.is_indexed_in_scopus')), # Apply safe_parse_boolean
-            'is_core': safe_parse_boolean(safe_get_column(row, 'primary_location.source.is_core')), # Apply safe_parse_boolean
-            'host_organization': safe_get_column(row, 'primary_location.source.host_organization'),
-            'host_organization_name': safe_get_column(row, 'primary_location.source.host_organization_name'),
-            'host_organization_lineage': parse_list_string(safe_get_column(row, 'primary_location.source.host_organization_lineage')),
-            'host_organization_lineage_names': parse_list_string(safe_get_column(row, 'primary_location.source.host_organization_lineage_names'))
-        })
-    primary_location_record = {
-        'output_id': output_hg_id,
-        'is_oa': safe_parse_boolean(safe_get_column(row, 'primary_location.is_oa')), # Apply safe_parse_boolean
-        'landing_page_url': safe_get_column(row, 'primary_location.landing_page_url'),
-        'pdf_url': safe_get_column(row, 'primary_location.pdf_url'),
-        'license': safe_get_column(row, 'primary_location.license'),
-        'license_id': safe_get_column(row, 'primary_location.license_id'),
-        'version': safe_get_column(row, 'primary_location.version'),
-        'is_accepted': safe_parse_boolean(safe_get_column(row, 'primary_location.is_accepted')), # Apply safe_parse_boolean
-        'is_published': safe_parse_boolean(safe_get_column(row, 'primary_location.is_published')), # Apply safe_parse_boolean
-        'source_id': primary_source_hg_id,
-        'location_type': 'primary'
-    }
-    if primary_location_record['landing_page_url'] or primary_location_record['pdf_url']:
-        locations_records_from_row.append(primary_location_record)
+#     openalex_primary_source_id = safe_get_column(row, 'primary_location.source.id')
+#     primary_source_hg_id = None
+#     if openalex_primary_source_id:
+#         primary_source_hg_id = generate_hg_id(openalex_primary_source_id)
+#         sources_data_from_row.append({
+#             'hg_id': primary_source_hg_id,
+#             'openalex_id': openalex_primary_source_id,
+#             'display_name': safe_get_column(row, 'primary_location.source.display_name'),
+#             'issn_l': safe_get_column(row, 'primary_location.source.issn_l'),
+#             'issn': parse_list_string(safe_get_column(row, 'primary_location.source.issn'), delimiter=';'),
+#             'type': safe_get_column(row, 'primary_location.source.type'),
+#             'is_oa': safe_parse_boolean(safe_get_column(row, 'primary_location.source.is_oa')), # Apply safe_parse_boolean
+#             'is_in_doaj': safe_parse_boolean(safe_get_column(row, 'primary_location.source.is_in_doaj')), # Apply safe_parse_boolean
+#             'is_indexed_in_scopus': safe_parse_boolean(safe_get_column(row, 'primary_location.source.is_indexed_in_scopus')), # Apply safe_parse_boolean
+#             'is_core': safe_parse_boolean(safe_get_column(row, 'primary_location.source.is_core')), # Apply safe_parse_boolean
+#             'host_organization': safe_get_column(row, 'primary_location.source.host_organization'),
+#             'host_organization_name': safe_get_column(row, 'primary_location.source.host_organization_name'),
+#             'host_organization_lineage': parse_list_string(safe_get_column(row, 'primary_location.source.host_organization_lineage')),
+#             'host_organization_lineage_names': parse_list_string(safe_get_column(row, 'primary_location.source.host_organization_lineage_names'))
+#         })
+#     primary_location_record = {
+#         'output_id': output_hg_id,
+#         'is_oa': safe_parse_boolean(safe_get_column(row, 'primary_location.is_oa')), # Apply safe_parse_boolean
+#         'landing_page_url': safe_get_column(row, 'primary_location.landing_page_url'),
+#         'pdf_url': safe_get_column(row, 'primary_location.pdf_url'),
+#         'license': safe_get_column(row, 'primary_location.license'),
+#         'license_id': safe_get_column(row, 'primary_location.license_id'),
+#         'version': safe_get_column(row, 'primary_location.version'),
+#         'is_accepted': safe_parse_boolean(safe_get_column(row, 'primary_location.is_accepted')), # Apply safe_parse_boolean
+#         'is_published': safe_parse_boolean(safe_get_column(row, 'primary_location.is_published')), # Apply safe_parse_boolean
+#         'source_id': primary_source_hg_id,
+#         'location_type': 'primary'
+#     }
+#     if primary_location_record['landing_page_url'] or primary_location_record['pdf_url']:
+#         locations_records_from_row.append(primary_location_record)
 
-    openalex_best_oa_source_id = safe_get_column(row, 'best_oa_location.source.id')
-    best_oa_source_hg_id = None
-    if openalex_best_oa_source_id:
-        best_oa_source_hg_id = generate_hg_id(openalex_best_oa_source_id)
-        sources_data_from_row.append({
-            'hg_id': best_oa_source_hg_id,
-            'openalex_id': openalex_best_oa_source_id,
-            'display_name': safe_get_column(row, 'best_oa_location.source.display_name'),
-            'issn_l': safe_get_column(row, 'best_oa_location.source.issn_l'),
-            'issn': parse_list_string(safe_get_column(row, 'best_oa_location.source.issn'), delimiter=';'),
-            'type': safe_get_column(row, 'best_oa_location.source.type'),
-            'is_oa': safe_parse_boolean(safe_get_column(row, 'best_oa_location.source.is_oa')), # Apply safe_parse_boolean
-            'is_in_doaj': safe_parse_boolean(safe_get_column(row, 'best_oa_location.source.is_in_doaj')), # Apply safe_parse_boolean
-            'is_indexed_in_scopus': safe_parse_boolean(safe_get_column(row, 'best_oa_location.source.is_indexed_in_scopus')), # Apply safe_parse_boolean
-            'is_core': safe_parse_boolean(safe_get_column(row, 'best_oa_location.source.is_core')), # Apply safe_parse_boolean
-            'host_organization': safe_get_column(row, 'best_oa_location.source.host_organization'),
-            'host_organization_name': safe_get_column(row, 'best_oa_location.source.host_organization_name'),
-            'host_organization_lineage': parse_list_string(safe_get_column(row, 'best_oa_location.source.host_organization_lineage')),
-            'host_organization_lineage_names': parse_list_string(safe_get_column(row, 'best_oa_location.source.host_organization_lineage_names'))
-        })
-    best_oa_location_record = {
-        'output_id': output_hg_id,
-        'is_oa': safe_parse_boolean(safe_get_column(row, 'best_oa_location.is_oa')), # Apply safe_parse_boolean
-        'landing_page_url': safe_get_column(row, 'best_oa_location.landing_page_url'),
-        'pdf_url': safe_get_column(row, 'best_oa_location.pdf_url'),
-        'license': safe_get_column(row, 'best_oa_location.license'),
-        'license_id': safe_get_column(row, 'best_oa_location.license_id'),
-        'version': safe_get_column(row, 'best_oa_location.version'),
-        'is_accepted': safe_parse_boolean(loc_is_accepteds[i]) if i < len(loc_is_accepteds) else None, # Apply safe_parse_boolean
-        'is_published': safe_parse_boolean(loc_is_publisheds[i]) if i < len(loc_is_publisheds) else None, # Apply safe_parse_boolean
-        'source_id': best_oa_source_hg_id,
-        'location_type': 'best_oa'
-    }
-    if best_oa_location_record['landing_page_url'] or best_oa_location_record['pdf_url']:
-        locations_records_from_row.append(best_oa_location_record)
+#     openalex_best_oa_source_id = safe_get_column(row, 'best_oa_location.source.id')
+#     best_oa_source_hg_id = None
+#     if openalex_best_oa_source_id:
+#         best_oa_source_hg_id = generate_hg_id(openalex_best_oa_source_id)
+#         sources_data_from_row.append({
+#             'hg_id': best_oa_source_hg_id,
+#             'openalex_id': openalex_best_oa_source_id,
+#             'display_name': safe_get_column(row, 'best_oa_location.source.display_name'),
+#             'issn_l': safe_get_column(row, 'best_oa_location.source.issn_l'),
+#             'issn': parse_list_string(safe_get_column(row, 'best_oa_location.source.issn'), delimiter=';'),
+#             'type': safe_get_column(row, 'best_oa_location.source.type'),
+#             'is_oa': safe_parse_boolean(safe_get_column(row, 'best_oa_location.source.is_oa')), # Apply safe_parse_boolean
+#             'is_in_doaj': safe_parse_boolean(safe_get_column(row, 'best_oa_location.source.is_in_doaj')), # Apply safe_parse_boolean
+#             'is_indexed_in_scopus': safe_parse_boolean(safe_get_column(row, 'best_oa_location.source.is_indexed_in_scopus')), # Apply safe_parse_boolean
+#             'is_core': safe_parse_boolean(safe_get_column(row, 'best_oa_location.source.is_core')), # Apply safe_parse_boolean
+#             'host_organization': safe_get_column(row, 'best_oa_location.source.host_organization'),
+#             'host_organization_name': safe_get_column(row, 'best_oa_location.source.host_organization_name'),
+#             'host_organization_lineage': parse_list_string(safe_get_column(row, 'best_oa_location.source.host_organization_lineage')),
+#             'host_organization_lineage_names': parse_list_string(safe_get_column(row, 'best_oa_location.source.host_organization_lineage_names'))
+#         })
+#     best_oa_location_record = {
+#         'output_id': output_hg_id,
+#         'is_oa': safe_parse_boolean(safe_get_column(row, 'best_oa_location.is_oa')), # Apply safe_parse_boolean
+#         'landing_page_url': safe_get_column(row, 'best_oa_location.landing_page_url'),
+#         'pdf_url': safe_get_column(row, 'best_oa_location.pdf_url'),
+#         'license': safe_get_column(row, 'best_oa_location.license'),
+#         'license_id': safe_get_column(row, 'best_oa_location.license_id'),
+#         'version': safe_get_column(row, 'best_oa_location.version'),
+#         'is_accepted': safe_parse_boolean(loc_is_accepteds[i]) if i < len(loc_is_accepteds) else None, # Apply safe_parse_boolean
+#         'is_published': safe_parse_boolean(loc_is_publisheds[i]) if i < len(loc_is_publisheds) else None, # Apply safe_parse_boolean
+#         'source_id': best_oa_source_hg_id,
+#         'location_type': 'best_oa'
+#     }
+#     if best_oa_location_record['landing_page_url'] or best_oa_location_record['pdf_url']:
+#         locations_records_from_row.append(best_oa_location_record)
 
 
-    # --- Transform Concepts (Primary Topic, Topics, Keywords, Mesh) ---
-    def add_concepts_and_links(
-        concept_ids_str, display_names_str, scores_str, wikidatas_str, levels_str, concept_type, 
-        target_output_join_list=None,
-        join_has_score=False,
-        descriptor_uis_str=None, qualifier_uis_str=None, is_major_topics_str=None
-    ):
-        concept_ids = parse_list_string(concept_ids_str)
-        display_names = parse_list_string(display_names_str)
-        scores_list_raw = parse_list_string(scores_str)
-        scores = [safe_parse_numeric(s) for s in scores_list_raw]
+#     # --- Transform Concepts (Primary Topic, Topics, Keywords, Mesh) ---
+#     def add_concepts_and_links(
+#         concept_ids_str, display_names_str, scores_str, wikidatas_str, levels_str, concept_type, 
+#         target_output_join_list=None,
+#         join_has_score=False,
+#         descriptor_uis_str=None, qualifier_uis_str=None, is_major_topics_str=None
+#     ):
+#         concept_ids = parse_list_string(concept_ids_str)
+#         display_names = parse_list_string(display_names_str)
+#         scores_list_raw = parse_list_string(scores_str)
+#         scores = [safe_parse_numeric(s) for s in scores_list_raw]
         
-        wikidatas = parse_list_string(wikidatas_str) if wikidatas_str else []
-        levels = [safe_parse_int(l) for l in parse_list_string(levels_str)] if levels_str else []
+#         wikidatas = parse_list_string(wikidatas_str) if wikidatas_str else []
+#         levels = [safe_parse_int(l) for l in parse_list_string(levels_str)] if levels_str else []
         
-        descriptor_uis = parse_list_string(descriptor_uis_str) if descriptor_uis_str else []
-        qualifier_uis = parse_list_string(qualifier_uis_str) if qualifier_uis_str else []
-        is_major_topics = [safe_parse_boolean(b) for b in parse_list_string(is_major_topics_str)] if is_major_topics_str else [] # Apply safe_parse_boolean
+#         descriptor_uis = parse_list_string(descriptor_uis_str) if descriptor_uis_str else []
+#         qualifier_uis = parse_list_string(qualifier_uis_str) if qualifier_uis_str else []
+#         is_major_topics = [safe_parse_boolean(b) for b in parse_list_string(is_major_topics_str)] if is_major_topics_str else [] # Apply safe_parse_boolean
 
 
-        max_len = len(concept_ids)
-        if concept_type == 'mesh':
-            max_len = max(max_len, len(descriptor_uis))
+#         max_len = len(concept_ids)
+#         if concept_type == 'mesh':
+#             max_len = max(max_len, len(descriptor_uis))
 
-        for i in range(max_len):
-            openalex_concept_id = concept_ids[i] if i < len(concept_ids) else None
-            concept_display_name = display_names[i] if i < len(display_names) else None
-            concept_score = scores[i] if i < len(scores) else None
-            concept_wikidata = wikidatas[i] if i < len(wikidatas) else None
-            concept_level = levels[i] if i < len(levels) else None
+#         for i in range(max_len):
+#             openalex_concept_id = concept_ids[i] if i < len(concept_ids) else None
+#             concept_display_name = display_names[i] if i < len(display_names) else None
+#             concept_score = scores[i] if i < len(scores) else None
+#             concept_wikidata = wikidatas[i] if i < len(wikidatas) else None
+#             concept_level = levels[i] if i < len(levels) else None
 
-            if concept_type == 'mesh':
-                mesh_descriptor_ui = descriptor_uis[i] if i < len(descriptor_uis) else None
-                if not mesh_descriptor_ui: continue
-                openalex_concept_id = f"mesh:{mesh_descriptor_ui}"
-                concept_display_name = concept_display_name if concept_display_name else None
+#             if concept_type == 'mesh':
+#                 mesh_descriptor_ui = descriptor_uis[i] if i < len(descriptor_uis) else None
+#                 if not mesh_descriptor_ui: continue
+#                 openalex_concept_id = f"mesh:{mesh_descriptor_ui}"
+#                 concept_display_name = concept_display_name if concept_display_name else None
                 
-            if not openalex_concept_id and not concept_display_name:
-                continue
+#             if not openalex_concept_id and not concept_display_name:
+#                 continue
             
-            concept_hg_id = generate_hg_id(openalex_concept_id or concept_display_name)
+#             concept_hg_id = generate_hg_id(openalex_concept_id or concept_display_name)
 
-            concept_record = {
-                'hg_id': concept_hg_id,
-                'openalex_id': openalex_concept_id,
-                'wikidata': concept_wikidata,
-                'display_name': concept_display_name,
-                'level': concept_level,
-                'score': concept_score,
-                'type': concept_type
-            }
-            concepts_data_from_row.append(concept_record)
+#             concept_record = {
+#                 'hg_id': concept_hg_id,
+#                 'openalex_id': openalex_concept_id,
+#                 'wikidata': concept_wikidata,
+#                 'display_name': concept_display_name,
+#                 'level': concept_level,
+#                 'score': concept_score,
+#                 'type': concept_type
+#             }
+#             concepts_data_from_row.append(concept_record)
 
-            if target_output_join_list is not None:
-                join_record = {'output_id': output_hg_id, 'concept_id': concept_hg_id}
-                if join_has_score:
-                    join_record['score'] = concept_score
-                if concept_type == 'mesh':
-                    join_record['descriptor_ui'] = mesh_descriptor_ui
-                    join_record['qualifier_ui'] = qualifier_uis[i] if i < len(qualifier_uis) else None
-                    join_record['is_major_topic'] = safe_parse_boolean(is_major_topics[i]) if i < len(is_major_topics) else None # Apply safe_parse_boolean
-                target_output_join_list.append(join_record)
+#             if target_output_join_list is not None:
+#                 join_record = {'output_id': output_hg_id, 'concept_id': concept_hg_id}
+#                 if join_has_score:
+#                     join_record['score'] = concept_score
+#                 if concept_type == 'mesh':
+#                     join_record['descriptor_ui'] = mesh_descriptor_ui
+#                     join_record['qualifier_ui'] = qualifier_uis[i] if i < len(qualifier_uis) else None
+#                     join_record['is_major_topic'] = safe_parse_boolean(is_major_topics[i]) if i < len(is_major_topics) else None # Apply safe_parse_boolean
+#                 target_output_join_list.append(join_record)
 
 
-    # Primary Topic and its hierarchy
-    add_concepts_and_links(
-        safe_get_column(row, 'primary_topic.id'),
-        safe_get_column(row, 'primary_topic.display_name'),
-        safe_get_column(row, 'primary_topic.score'),
-        safe_get_column(row, 'primary_topic.wikidata'),
-        safe_get_column(row, 'primary_topic.level'),
-        'primary_topic', output_concepts_data_from_row, join_has_score=False
-    )
-    add_concepts_and_links(
-        safe_get_column(row, 'primary_topic.subfield.id'),
-        safe_get_column(row, 'primary_topic.subfield.display_name'),
-        None, None, None, 'subfield', None
-    )
-    add_concepts_and_links(
-        safe_get_column(row, 'primary_topic.field.id'),
-        safe_get_column(row, 'primary_topic.field.display_name'),
-        None, None, None, 'field', None
-    )
-    add_concepts_and_links(
-        safe_get_column(row, 'primary_topic.domain.id'),
-        safe_get_column(row, 'primary_topic.domain.display_name'),
-        None, None, None, 'domain', None
-    )
+#     # Primary Topic and its hierarchy
+#     add_concepts_and_links(
+#         safe_get_column(row, 'primary_topic.id'),
+#         safe_get_column(row, 'primary_topic.display_name'),
+#         safe_get_column(row, 'primary_topic.score'),
+#         safe_get_column(row, 'primary_topic.wikidata'),
+#         safe_get_column(row, 'primary_topic.level'),
+#         'primary_topic', output_concepts_data_from_row, join_has_score=False
+#     )
+#     add_concepts_and_links(
+#         safe_get_column(row, 'primary_topic.subfield.id'),
+#         safe_get_column(row, 'primary_topic.subfield.display_name'),
+#         None, None, None, 'subfield', None
+#     )
+#     add_concepts_and_links(
+#         safe_get_column(row, 'primary_topic.field.id'),
+#         safe_get_column(row, 'primary_topic.field.display_name'),
+#         None, None, None, 'field', None
+#     )
+#     add_concepts_and_links(
+#         safe_get_column(row, 'primary_topic.domain.id'),
+#         safe_get_column(row, 'primary_topic.domain.display_name'),
+#         None, None, None, 'domain', None
+#     )
 
-    # Topics array
-    add_concepts_and_links(
-        safe_get_column(row, 'topics.id'),
-        safe_get_column(row, 'topics.display_name'),
-        safe_get_column(row, 'topics.score'),
-        None, safe_get_column(row, 'topics.level'),
-        'topic', output_topics_data_from_row, join_has_score=True
-    )
+#     # Topics array
+#     add_concepts_and_links(
+#         safe_get_column(row, 'topics.id'),
+#         safe_get_column(row, 'topics.display_name'),
+#         safe_get_column(row, 'topics.score'),
+#         None, safe_get_column(row, 'topics.level'),
+#         'topic', output_topics_data_from_row, join_has_score=True
+#     )
 
-    # Keywords array
-    add_concepts_and_links(
-        safe_get_column(row, 'keywords.id'),
-        safe_get_column(row, 'keywords.display_name'),
-        safe_get_column(row, 'keywords.score'),
-        None, None, 'keyword', output_keywords_data_from_row, join_has_score=True
-    )
+#     # Keywords array
+#     add_concepts_and_links(
+#         safe_get_column(row, 'keywords.id'),
+#         safe_get_column(row, 'keywords.display_name'),
+#         safe_get_column(row, 'keywords.score'),
+#         None, None, 'keyword', output_keywords_data_from_row, join_has_score=True
+#     )
     
-    # Concepts (general)
-    add_concepts_and_links(
-        safe_get_column(row, 'concepts.id'),
-        safe_get_column(row, 'concepts.display_name'),
-        safe_get_column(row, 'concepts.score'),
-        safe_get_column(row, 'concepts.wikidata'),
-        safe_get_column(row, 'concepts.level'),
-        'concept', None
-    )
+#     # Concepts (general)
+#     add_concepts_and_links(
+#         safe_get_column(row, 'concepts.id'),
+#         safe_get_column(row, 'concepts.display_name'),
+#         safe_get_column(row, 'concepts.score'),
+#         safe_get_column(row, 'concepts.wikidata'),
+#         safe_get_column(row, 'concepts.level'),
+#         'concept', None
+#     )
 
-    # Mesh terms
-    add_concepts_and_links(
-        None,
-        safe_get_column(row, 'mesh.descriptor_name'),
-        None, None, None,
-        'mesh', output_mesh_terms_data_from_row, join_has_score=False,
-        descriptor_uis_str=safe_get_column(row, 'mesh.descriptor_ui'),
-        qualifier_uis_str=safe_get_column(row, 'mesh.qualifier_ui'),
-        is_major_topics_str=safe_get_column(row, 'mesh.is_major_topic')
-    )
+#     # Mesh terms
+#     add_concepts_and_links(
+#         None,
+#         safe_get_column(row, 'mesh.descriptor_name'),
+#         None, None, None,
+#         'mesh', output_mesh_terms_data_from_row, join_has_score=False,
+#         descriptor_uis_str=safe_get_column(row, 'mesh.descriptor_ui'),
+#         qualifier_uis_str=safe_get_column(row, 'mesh.qualifier_ui'),
+#         is_major_topics_str=safe_get_column(row, 'mesh.is_major_topic')
+#     )
 
-    # --- Transform Sustainable Development Goals (SDGs) ---
-    openalex_sdg_ids = parse_list_string(safe_get_column(row, 'sustainable_development_goals.id'))
-    sdg_display_names = parse_list_string(safe_get_column(row, 'sustainable_development_goals.display_name'))
-    sdg_scores = [safe_parse_numeric(s) for s in parse_list_string(safe_get_column(row, 'sustainable_development_goals.score'))]
+#     # --- Transform Sustainable Development Goals (SDGs) ---
+#     openalex_sdg_ids = parse_list_string(safe_get_column(row, 'sustainable_development_goals.id'))
+#     sdg_display_names = parse_list_string(safe_get_column(row, 'sustainable_development_goals.display_name'))
+#     sdg_scores = [safe_parse_numeric(s) for s in parse_list_string(safe_get_column(row, 'sustainable_development_goals.score'))]
 
-    for i in range(len(openalex_sdg_ids)):
-        openalex_sdg_id = openalex_sdg_ids[i] if i < len(openalex_sdg_ids) else None
-        if not openalex_sdg_id:
-            continue
-        sdg_hg_id = generate_hg_id(openalex_sdg_id)
-        current_sdg_score = sdg_scores[i] if i < len(sdg_scores) else None
+#     for i in range(len(openalex_sdg_ids)):
+#         openalex_sdg_id = openalex_sdg_ids[i] if i < len(openalex_sdg_ids) else None
+#         if not openalex_sdg_id:
+#             continue
+#         sdg_hg_id = generate_hg_id(openalex_sdg_id)
+#         current_sdg_score = sdg_scores[i] if i < len(sdg_scores) else None
 
-        sdgs_data_from_row.append({
-            'hg_id': sdg_hg_id,
-            'openalex_id': openalex_sdg_id,
-            'display_name': sdg_display_names[i] if i < len(sdg_display_names) else None,
-            'score': current_sdg_score
-        })
-        output_sdgs_data_from_row.append({
-            'output_id': output_hg_id,
-            'sdg_id': sdg_hg_id,
-            'score': current_sdg_score
-        })
+#         sdgs_data_from_row.append({
+#             'hg_id': sdg_hg_id,
+#             'openalex_id': openalex_sdg_id,
+#             'display_name': sdg_display_names[i] if i < len(sdg_display_names) else None,
+#             'score': current_sdg_score
+#         })
+#         output_sdgs_data_from_row.append({
+#             'output_id': output_hg_id,
+#             'sdg_id': sdg_hg_id,
+#             'score': current_sdg_score
+#         })
 
-    # --- Transform Grants Data ---
-    grant_award_ids = parse_list_string(safe_get_column(row, 'grants.award_id'))
-    grant_funders = parse_list_string(safe_get_column(row, 'grants.funder'))
-    grant_funder_display_names = parse_list_string(safe_get_column(row, 'grants.funder_display_name'))
+#     # --- Transform Grants Data ---
+#     grant_award_ids = parse_list_string(safe_get_column(row, 'grants.award_id'))
+#     grant_funders = parse_list_string(safe_get_column(row, 'grants.funder'))
+#     grant_funder_display_names = parse_list_string(safe_get_column(row, 'grants.funder_display_name'))
 
-    for i in range(len(grant_award_ids)):
-        grant_award_id = grant_award_ids[i] if i < len(grant_award_ids) else None
-        if not grant_award_id:
-            continue
-        grant_hg_id = generate_hg_id(grant_award_id)
-        grants_data_from_row.append({
-            'hg_id': grant_hg_id,
-            'award_id': grant_award_id,
-            'funder': grant_funders[i] if i < len(grant_funders) else None,
-            'funder_display_name': grant_funder_display_names[i] if i < len(grant_funder_display_names) else None
-        })
-        output_grants_data_from_row.append({
-            'output_id': output_hg_id,
-            'grant_id': grant_hg_id
-        })
+#     for i in range(len(grant_award_ids)):
+#         grant_award_id = grant_award_ids[i] if i < len(grant_award_ids) else None
+#         if not grant_award_id:
+#             continue
+#         grant_hg_id = generate_hg_id(grant_award_id)
+#         grants_data_from_row.append({
+#             'hg_id': grant_hg_id,
+#             'award_id': grant_award_id,
+#             'funder': grant_funders[i] if i < len(grant_funders) else None,
+#             'funder_display_name': grant_funder_display_names[i] if i < len(grant_funder_display_names) else None
+#         })
+#         output_grants_data_from_row.append({
+#             'output_id': output_hg_id,
+#             'grant_id': grant_hg_id
+#         })
     
-    # --- Transform Counts By Year ---
-    years_str = safe_get_column(row, 'counts_by_year.year')
-    cited_by_counts_str = safe_get_column(row, 'counts_by_year.cited_by_count')
+#     # --- Transform Counts By Year ---
+#     years_str = safe_get_column(row, 'counts_by_year.year')
+#     cited_by_counts_str = safe_get_column(row, 'counts_by_year.cited_by_count')
 
-    years = parse_list_string(years_str)
-    cited_by_counts = [safe_parse_int(c) for c in parse_list_string(cited_by_counts_str)]
+#     years = parse_list_string(years_str)
+#     cited_by_counts = [safe_parse_int(c) for c in parse_list_string(cited_by_counts_str)]
 
-    for i in range(len(years)):
-        year = years[i] if i < len(years) else None
-        cited_count = cited_by_counts[i] if i < len(cited_by_counts) else None
+#     for i in range(len(years)):
+#         year = years[i] if i < len(years) else None
+#         cited_count = cited_by_counts[i] if i < len(cited_by_counts) else None
 
-        if year is not None and cited_count is not None:
-            output_yearly_counts_data_from_row.append({
-                'output_id': output_hg_id,
-                'year': year,
-                'cited_by_count': cited_count
-            })
+#         if year is not None and cited_count is not None:
+#             output_yearly_counts_data_from_row.append({
+#                 'output_id': output_hg_id,
+#                 'year': year,
+#                 'cited_by_count': cited_count
+#             })
 
-    return (output_data, authors_data_from_row, sources_data_from_row, output_authors_data_from_row,
-            institutions_data_from_row, output_institutions_data_from_row, concepts_data_from_row,
-            output_concepts_data_from_row, output_topics_data_from_row, output_keywords_data_from_row,
-            output_mesh_terms_data_from_row, locations_records_from_row, sdgs_data_from_row, output_sdgs_data_from_row,
-            grants_data_from_row, output_grants_data_from_row, output_yearly_counts_data_from_row, output_external_ids_data_from_row)
+#     return (output_data, authors_data_from_row, sources_data_from_row, output_authors_data_from_row,
+#             institutions_data_from_row, output_institutions_data_from_row, concepts_data_from_row,
+#             output_concepts_data_from_row, output_topics_data_from_row, output_keywords_data_from_row,
+#             output_mesh_terms_data_from_row, locations_records_from_row, sdgs_data_from_row, output_sdgs_data_from_row,
+#             grants_data_from_row, output_grants_data_from_row, output_yearly_counts_data_from_row, output_external_ids_data_from_row)
 
 def revert_tuples_to_lists(data_list, table_name):
     """
@@ -1453,31 +1457,35 @@ def run_etl():
         processed_rows = 0
         print("\n--- Starting Data Processing from CSV Rows ---")
         for index, row in df.iterrows():
-            transformed_data = process_excel_row(row)
+            # transformed_data = process_excel_row(row)
+            authors_data_from_row = authors_process_row(row)
+            concepts_data_from_row = concept_process_row(row)
+            institutions_data_from_row = institutions_process_row(row)
+         
             
-            if not transformed_data[0]:
-                continue
+            # if not transformed_data[0]:
+            #     continue
 
-            output_data, authors_data_from_row, sources_data_from_row, output_authors_data_from_row, \
-            institutions_data_from_row, output_institutions_data_from_row, concepts_data_from_row, \
-            output_concepts_data_from_row, output_topics_data_from_row, output_keywords_data_from_row, \
-            output_mesh_terms_data_from_row, locations_records_from_row, sdgs_data_from_row, output_sdgs_data_from_row, \
-            grants_data_from_row, output_grants_data_from_row, output_yearly_counts_data_from_row, output_external_ids_data_from_row = transformed_data
+            # output_data, authors_data_from_row, sources_data_from_row, output_authors_data_from_row, \
+            # institutions_data_from_row, output_institutions_data_from_row, concepts_data_from_row, \
+            # output_concepts_data_from_row, output_topics_data_from_row, output_keywords_data_from_row, \
+            # output_mesh_terms_data_from_row, locations_records_from_row, sdgs_data_from_row, output_sdgs_data_from_row, \
+            # grants_data_from_row, output_grants_data_from_row, output_yearly_counts_data_from_row, output_external_ids_data_from_row = transformed_data
 
             # Explicitly define output_hg_id after unpacking output_data
-            output_hg_id = output_data.get('hg_id')
+            # output_hg_id = output_data.get('hg_id')
 
             # Collect main entities, ensuring uniqueness using their hg_id
-            if output_data and output_hg_id:
-                collected_outputs[output_hg_id] = output_data
+            # if output_data and output_hg_id:
+            #     collected_outputs[output_hg_id] = output_data
 
             for a in authors_data_from_row:
                 if a.get('hg_id'):
                     collected_authors[a['hg_id']] = a
 
-            for s in sources_data_from_row:
-                if s.get('hg_id'):
-                    collected_sources[s['hg_id']] = s
+            # for s in sources_data_from_row:
+            #     if s.get('hg_id'):
+            #         collected_sources[s['hg_id']] = s
 
             # Institutions are collected here, but their `display_name`, `ror`, etc.,
             # might not be fully populated until a later join/enrichment step if
@@ -1493,42 +1501,42 @@ def run_etl():
                 if c_data.get('hg_id'):
                     collected_concepts[c_data['hg_id']] = c_data
 
-            for s_data in sdgs_data_from_row:
-                if s_data.get('hg_id'):
-                    collected_sdgs[s_data['hg_id']] = s_data
+            # for s_data in sdgs_data_from_row:
+            #     if s_data.get('hg_id'):
+            #         collected_sdgs[s_data['hg_id']] = s_data
             
-            for g_data in grants_data_from_row:
-                if g_data.get('hg_id'):
-                    collected_grants[g_data['hg_id']] = g_data
+            # for g_data in grants_data_from_row:
+            #     if g_data.get('hg_id'):
+            #         collected_grants[g_data['hg_id']] = g_data
 
 
             # Collect join table data (using sets of frozensets for uniqueness)
             # IMPORTANT: Only add join records if their corresponding output_id exists in collected_outputs
-            if output_hg_id in collected_outputs: # Check if the parent output was successfully collected
-                for wa in output_authors_data_from_row:
-                    collected_output_authors.add(make_hashable_for_set(wa))
-                for wi in output_institutions_data_from_row:
-                    collected_output_institutions.add(make_hashable_for_set(wi))
-                for wc in output_concepts_data_from_row:
-                    collected_output_concepts.add(make_hashable_for_set(wc))
-                for wt in output_topics_data_from_row:
-                    collected_output_topics.add(make_hashable_for_set(wt))
-                for wk in output_keywords_data_from_row:
-                    collected_output_keywords.add(make_hashable_for_set(wk))
-                for wm in output_mesh_terms_data_from_row:
-                    collected_output_mesh_terms.add(make_hashable_for_set(wm))
-                for loc in locations_records_from_row:
-                    collected_locations.append(loc) 
-                for ws in output_sdgs_data_from_row:
-                    collected_output_sdgs.add(make_hashable_for_set(ws))
-                for wg in output_grants_data_from_row:
-                    collected_output_grants.add(make_hashable_for_set(wg))
-                for wyc in output_yearly_counts_data_from_row:
-                    collected_output_yearly_counts.add(make_hashable_for_set(wyc))
-                for wei in output_external_ids_data_from_row:
-                    collected_output_external_ids.add(make_hashable_for_set(wei))
-            else:
-                print(f"Skipping join data for output_id {output_hg_id} as it was not collected successfully.")
+            # if output_hg_id in collected_outputs: # Check if the parent output was successfully collected
+            #     for wa in output_authors_data_from_row:
+            #         collected_output_authors.add(make_hashable_for_set(wa))
+            #     for wi in output_institutions_data_from_row:
+            #         collected_output_institutions.add(make_hashable_for_set(wi))
+            #     for wc in output_concepts_data_from_row:
+            #         collected_output_concepts.add(make_hashable_for_set(wc))
+            #     for wt in output_topics_data_from_row:
+            #         collected_output_topics.add(make_hashable_for_set(wt))
+            #     for wk in output_keywords_data_from_row:
+            #         collected_output_keywords.add(make_hashable_for_set(wk))
+            #     for wm in output_mesh_terms_data_from_row:
+            #         collected_output_mesh_terms.add(make_hashable_for_set(wm))
+            #     for loc in locations_records_from_row:
+            #         collected_locations.append(loc) 
+            #     for ws in output_sdgs_data_from_row:
+            #         collected_output_sdgs.add(make_hashable_for_set(ws))
+            #     for wg in output_grants_data_from_row:
+            #         collected_output_grants.add(make_hashable_for_set(wg))
+            #     for wyc in output_yearly_counts_data_from_row:
+            #         collected_output_yearly_counts.add(make_hashable_for_set(wyc))
+            #     for wei in output_external_ids_data_from_row:
+            #         collected_output_external_ids.add(make_hashable_for_set(wei))
+            # else:
+            #     print(f"Skipping join data for output_id {output_hg_id} as it was not collected successfully.")
 
 
             processed_rows += 1
