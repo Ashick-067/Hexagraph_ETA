@@ -113,3 +113,15 @@ def parse_jsonb_string(json_string):
         return json.loads(str(json_string))
     except (json.JSONDecodeError, TypeError):
         return None    
+    
+def make_hashable_for_set(obj):
+    """
+    Recursively converts mutable objects (dicts, lists) into immutable ones (frozensets, tuples)
+    to allow the top-level object (usually a dict) to be hashed for set operations.
+    """
+    if isinstance(obj, dict):
+        return frozenset((k, make_hashable_for_set(v)) for k, v in sorted(obj.items()))
+    elif isinstance(obj, list):
+        return tuple(make_hashable_for_set(elem) for elem in obj)
+    else:
+        return obj # Base case: immutable type (e.g., string, int, float, None)

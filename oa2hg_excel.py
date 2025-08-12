@@ -6,6 +6,7 @@ import os
 from datetime import datetime
 import uuid
 
+from utils import *
 from authors import *
 from concepts import *
 from institutions import *
@@ -13,6 +14,7 @@ from outputs import *
 from grands_data import *
 from sdgs_data import *
 from sources import*
+from output_authors import *
 from dotenv import load_dotenv
 import os
 
@@ -1469,9 +1471,11 @@ def run_etl():
             grants_data_from_row = grand_data_process_row(row)
             output_data = outputs_process_row(row)
             sdgs_data_from_row = sdgs_process_row(row)
-            sources_data_from_row=source_process_row(row)
+            sources_data_from_row = source_process_row(row)
          
             
+            output_authors_data_from_row = output_authors_process_row(row)
+
             # if not transformed_data[0]:
             #     continue
 
@@ -1521,31 +1525,31 @@ def run_etl():
 
             # Collect join table data (using sets of frozensets for uniqueness)
             # IMPORTANT: Only add join records if their corresponding output_id exists in collected_outputs
-            # if output_hg_id in collected_outputs: # Check if the parent output was successfully collected
-            #     for wa in output_authors_data_from_row:
-            #         collected_output_authors.add(make_hashable_for_set(wa))
-            #     for wi in output_institutions_data_from_row:
-            #         collected_output_institutions.add(make_hashable_for_set(wi))
-            #     for wc in output_concepts_data_from_row:
-            #         collected_output_concepts.add(make_hashable_for_set(wc))
-            #     for wt in output_topics_data_from_row:
-            #         collected_output_topics.add(make_hashable_for_set(wt))
-            #     for wk in output_keywords_data_from_row:
-            #         collected_output_keywords.add(make_hashable_for_set(wk))
-            #     for wm in output_mesh_terms_data_from_row:
-            #         collected_output_mesh_terms.add(make_hashable_for_set(wm))
-            #     for loc in locations_records_from_row:
-            #         collected_locations.append(loc) 
-            #     for ws in output_sdgs_data_from_row:
-            #         collected_output_sdgs.add(make_hashable_for_set(ws))
-            #     for wg in output_grants_data_from_row:
-            #         collected_output_grants.add(make_hashable_for_set(wg))
-            #     for wyc in output_yearly_counts_data_from_row:
-            #         collected_output_yearly_counts.add(make_hashable_for_set(wyc))
-            #     for wei in output_external_ids_data_from_row:
-            #         collected_output_external_ids.add(make_hashable_for_set(wei))
-            # else:
-            #     print(f"Skipping join data for output_id {output_hg_id} as it was not collected successfully.")
+            if output_hg_id in collected_outputs: # Check if the parent output was successfully collected
+                for wa in output_authors_data_from_row:
+                    collected_output_authors.add(make_hashable_for_set(wa))
+                # for wi in output_institutions_data_from_row:
+                #     collected_output_institutions.add(make_hashable_for_set(wi))
+                # for wc in output_concepts_data_from_row:
+                #     collected_output_concepts.add(make_hashable_for_set(wc))
+                # for wt in output_topics_data_from_row:
+                #     collected_output_topics.add(make_hashable_for_set(wt))
+                # for wk in output_keywords_data_from_row:
+                #     collected_output_keywords.add(make_hashable_for_set(wk))
+                # for wm in output_mesh_terms_data_from_row:
+                #     collected_output_mesh_terms.add(make_hashable_for_set(wm))
+                # for loc in locations_records_from_row:
+                #     collected_locations.append(loc) 
+                # for ws in output_sdgs_data_from_row:
+                #     collected_output_sdgs.add(make_hashable_for_set(ws))
+                # for wg in output_grants_data_from_row:
+                #     collected_output_grants.add(make_hashable_for_set(wg))
+                # for wyc in output_yearly_counts_data_from_row:
+                #     collected_output_yearly_counts.add(make_hashable_for_set(wyc))
+                # for wei in output_external_ids_data_from_row:
+                #     collected_output_external_ids.add(make_hashable_for_set(wei))
+            else:
+                print(f"Skipping join data for output_id {output_hg_id} as it was not collected successfully.")
 
 
             processed_rows += 1
