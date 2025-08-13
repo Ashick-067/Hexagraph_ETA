@@ -1,9 +1,7 @@
 import pandas as pd
 import psycopg2
 from psycopg2 import extras
-import json
 import os
-from datetime import datetime
 import uuid
 from dotenv import load_dotenv
 import os
@@ -26,6 +24,7 @@ from output_yearly_counts_data import *
 from output_concepts import*
 from output_topics import*
 from output_location import *
+from output_mesh_terms import *
 
 load_dotenv(".env")
 
@@ -1481,6 +1480,8 @@ def run_etl():
             output_data = outputs_process_row(row)
             sdgs_data_from_row = sdgs_process_row(row)
             sources_data_from_row = source_process_row(row)
+
+            output_mesh_terms_data_from_row = output_mesh_terms_process_row(row)
             output_sdgs_data_from_row= outputs_sdgs_data_process_row(row)    
             output_grants_data_from_row= outputs_grand_data_process_row(row)
             output_authors_data_from_row = output_authors_process_row(row)
@@ -1552,8 +1553,8 @@ def run_etl():
                     collected_output_topics.add(make_hashable_for_set(wt))
                 for wk in output_keywords_data_from_row:
                     collected_output_keywords.add(make_hashable_for_set(wk))
-                # for wm in output_mesh_terms_data_from_row:
-                #     collected_output_mesh_terms.add(make_hashable_for_set(wm))
+                for wm in output_mesh_terms_data_from_row:
+                    collected_output_mesh_terms.add(make_hashable_for_set(wm))
                 for loc in locations_records_from_row:
                     collected_locations.append(loc) 
                 for ws in output_sdgs_data_from_row:
