@@ -23,6 +23,7 @@ from output_grand_data import *
 from output_keywords import *
 from output_sdgs_data import *
 from output_yearly_counts_data import *
+from output_concepts import*
 
 load_dotenv(".env")
 
@@ -1485,6 +1486,7 @@ def run_etl():
             output_institutions_data_from_row = output_institution_process_row(row)
             output_keywords_data_from_row = output_keywords_process_row(row)
             output_yearly_counts_data_from_row = outputs_yearly_counts_data_process_row(row)
+            output_concepts_data_from_row = output_concepts_process_row(row)
 
             # if not transformed_data[0]:
             #     continue
@@ -1540,8 +1542,8 @@ def run_etl():
                     collected_output_authors.add(make_hashable_for_set(wa))
                 for wi in output_institutions_data_from_row:
                     collected_output_institutions.add(make_hashable_for_set(wi))
-                # for wc in output_concepts_data_from_row:
-                #     collected_output_concepts.add(make_hashable_for_set(wc))
+                for wc in output_concepts_data_from_row:
+                    collected_output_concepts.add(make_hashable_for_set(wc))
                 # for wt in output_topics_data_from_row:
                 #     collected_output_topics.add(make_hashable_for_set(wt))
                 for wk in output_keywords_data_from_row:
