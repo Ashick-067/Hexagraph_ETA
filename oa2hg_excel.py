@@ -5,6 +5,8 @@ import json
 import os
 from datetime import datetime
 import uuid
+from dotenv import load_dotenv
+import os
 
 from utils import *
 from authors import *
@@ -15,8 +17,7 @@ from grands_data import *
 from sdgs_data import *
 from sources import*
 from output_authors import *
-from dotenv import load_dotenv
-import os
+from output_external_ids import *
 
 load_dotenv(".env")
 
@@ -1475,6 +1476,7 @@ def run_etl():
          
             
             output_authors_data_from_row = output_authors_process_row(row)
+            output_external_ids_data_from_row = output_external_ids_process_row(row)
 
             # if not transformed_data[0]:
             #     continue
@@ -1546,8 +1548,8 @@ def run_etl():
                 #     collected_output_grants.add(make_hashable_for_set(wg))
                 # for wyc in output_yearly_counts_data_from_row:
                 #     collected_output_yearly_counts.add(make_hashable_for_set(wyc))
-                # for wei in output_external_ids_data_from_row:
-                #     collected_output_external_ids.add(make_hashable_for_set(wei))
+                for wei in output_external_ids_data_from_row:
+                    collected_output_external_ids.add(make_hashable_for_set(wei))
             else:
                 print(f"Skipping join data for output_id {output_hg_id} as it was not collected successfully.")
 
