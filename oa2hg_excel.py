@@ -20,8 +20,7 @@ from output_authors import *
 from output_external_ids import *
 from output_institutions import*
 from output_grand_data import *
-from dotenv import load_dotenv
-import os
+from output_keywords import *
 
 load_dotenv(".env")
 
@@ -1477,11 +1476,12 @@ def run_etl():
             output_data = outputs_process_row(row)
             sdgs_data_from_row = sdgs_process_row(row)
             sources_data_from_row = source_process_row(row)
+
             output_grants_data_from_row= outputs_grand_data_process_row(row)
-            
             output_authors_data_from_row = output_authors_process_row(row)
             output_external_ids_data_from_row = output_external_ids_process_row(row)
             output_institutions_data_from_row = output_institution_process_row(row)
+            output_keywords_data_from_row = output_keywords_process_row(row)
 
             # if not transformed_data[0]:
             #     continue
@@ -1541,8 +1541,8 @@ def run_etl():
                 #     collected_output_concepts.add(make_hashable_for_set(wc))
                 # for wt in output_topics_data_from_row:
                 #     collected_output_topics.add(make_hashable_for_set(wt))
-                # for wk in output_keywords_data_from_row:
-                #     collected_output_keywords.add(make_hashable_for_set(wk))
+                for wk in output_keywords_data_from_row:
+                    collected_output_keywords.add(make_hashable_for_set(wk))
                 # for wm in output_mesh_terms_data_from_row:
                 #     collected_output_mesh_terms.add(make_hashable_for_set(wm))
                 # for loc in locations_records_from_row:
