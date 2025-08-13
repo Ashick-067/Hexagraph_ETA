@@ -25,6 +25,7 @@ from output_sdgs_data import *
 from output_yearly_counts_data import *
 from output_concepts import*
 from output_topics import*
+from output_location import *
 
 load_dotenv(".env")
 
@@ -1489,6 +1490,7 @@ def run_etl():
             output_yearly_counts_data_from_row = outputs_yearly_counts_data_process_row(row)
             output_concepts_data_from_row = output_concepts_process_row(row)
             output_topics_data_from_row = output_topics_process_row(row)
+            locations_records_from_row = outputs_location_process_row(row)
 
             # if not transformed_data[0]:
             #     continue
@@ -1552,8 +1554,8 @@ def run_etl():
                     collected_output_keywords.add(make_hashable_for_set(wk))
                 # for wm in output_mesh_terms_data_from_row:
                 #     collected_output_mesh_terms.add(make_hashable_for_set(wm))
-                # for loc in locations_records_from_row:
-                #     collected_locations.append(loc) 
+                for loc in locations_records_from_row:
+                    collected_locations.append(loc) 
                 for ws in output_sdgs_data_from_row:
                     collected_output_sdgs.add(make_hashable_for_set(ws))
                 for wg in output_grants_data_from_row:
