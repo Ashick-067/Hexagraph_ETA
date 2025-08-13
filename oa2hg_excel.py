@@ -21,6 +21,7 @@ from output_external_ids import *
 from output_institutions import*
 from output_grand_data import *
 from output_keywords import *
+from output_sdgs_data import *
 
 load_dotenv(".env")
 
@@ -1476,7 +1477,7 @@ def run_etl():
             output_data = outputs_process_row(row)
             sdgs_data_from_row = sdgs_process_row(row)
             sources_data_from_row = source_process_row(row)
-
+            output_sdgs_data_from_row= outputs_sdgs_data_process_row(row)    
             output_grants_data_from_row= outputs_grand_data_process_row(row)
             output_authors_data_from_row = output_authors_process_row(row)
             output_external_ids_data_from_row = output_external_ids_process_row(row)
@@ -1547,8 +1548,8 @@ def run_etl():
                 #     collected_output_mesh_terms.add(make_hashable_for_set(wm))
                 # for loc in locations_records_from_row:
                 #     collected_locations.append(loc) 
-                # for ws in output_sdgs_data_from_row:
-                #     collected_output_sdgs.add(make_hashable_for_set(ws))
+                for ws in output_sdgs_data_from_row:
+                    collected_output_sdgs.add(make_hashable_for_set(ws))
                 for wg in output_grants_data_from_row:
                     collected_output_grants.add(make_hashable_for_set(wg))
                 # for wyc in output_yearly_counts_data_from_row:
