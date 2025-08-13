@@ -22,6 +22,7 @@ from output_institutions import*
 from output_grand_data import *
 from output_keywords import *
 from output_sdgs_data import *
+from output_yearly_counts_data import *
 
 load_dotenv(".env")
 
@@ -962,22 +963,22 @@ def create_tables(cursor, conn):
     #     })
     
 #     # --- Transform Counts By Year ---
-#     years_str = safe_get_column(row, 'counts_by_year.year')
-#     cited_by_counts_str = safe_get_column(row, 'counts_by_year.cited_by_count')
+    # years_str = safe_get_column(row, 'counts_by_year.year')
+    # cited_by_counts_str = safe_get_column(row, 'counts_by_year.cited_by_count')
 
-#     years = parse_list_string(years_str)
-#     cited_by_counts = [safe_parse_int(c) for c in parse_list_string(cited_by_counts_str)]
+    # years = parse_list_string(years_str)
+    # cited_by_counts = [safe_parse_int(c) for c in parse_list_string(cited_by_counts_str)]
 
-#     for i in range(len(years)):
-#         year = years[i] if i < len(years) else None
-#         cited_count = cited_by_counts[i] if i < len(cited_by_counts) else None
+    # for i in range(len(years)):
+    #     year = years[i] if i < len(years) else None
+    #     cited_count = cited_by_counts[i] if i < len(cited_by_counts) else None
 
-#         if year is not None and cited_count is not None:
-#             output_yearly_counts_data_from_row.append({
-#                 'output_id': output_hg_id,
-#                 'year': year,
-#                 'cited_by_count': cited_count
-#             })
+    #     if year is not None and cited_count is not None:
+    #         output_yearly_counts_data_from_row.append({
+    #             'output_id': output_hg_id,
+    #             'year': year,
+    #             'cited_by_count': cited_count
+    #         })
 
 #     return (output_data, authors_data_from_row, sources_data_from_row, output_authors_data_from_row,
 #             institutions_data_from_row, output_institutions_data_from_row, concepts_data_from_row,
@@ -1483,6 +1484,7 @@ def run_etl():
             output_external_ids_data_from_row = output_external_ids_process_row(row)
             output_institutions_data_from_row = output_institution_process_row(row)
             output_keywords_data_from_row = output_keywords_process_row(row)
+            output_yearly_counts_data_from_row = outputs_yearly_counts_data_process_row(row)
 
             # if not transformed_data[0]:
             #     continue
@@ -1552,8 +1554,8 @@ def run_etl():
                     collected_output_sdgs.add(make_hashable_for_set(ws))
                 for wg in output_grants_data_from_row:
                     collected_output_grants.add(make_hashable_for_set(wg))
-                # for wyc in output_yearly_counts_data_from_row:
-                #     collected_output_yearly_counts.add(make_hashable_for_set(wyc))
+                for wyc in output_yearly_counts_data_from_row:
+                    collected_output_yearly_counts.add(make_hashable_for_set(wyc))
                 for wei in output_external_ids_data_from_row:
                     collected_output_external_ids.add(make_hashable_for_set(wei))
             else:
