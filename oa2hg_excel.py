@@ -19,6 +19,7 @@ from sources import*
 from output_authors import *
 from output_external_ids import *
 from output_institutions import*
+from output_grand_data import *
 from dotenv import load_dotenv
 import os
 
@@ -940,25 +941,25 @@ def create_tables(cursor, conn):
 #         })
 
 #     # --- Transform Grants Data ---
-#     grant_award_ids = parse_list_string(safe_get_column(row, 'grants.award_id'))
-#     grant_funders = parse_list_string(safe_get_column(row, 'grants.funder'))
-#     grant_funder_display_names = parse_list_string(safe_get_column(row, 'grants.funder_display_name'))
+    # grant_award_ids = parse_list_string(safe_get_column(row, 'grants.award_id'))
+    # grant_funders = parse_list_string(safe_get_column(row, 'grants.funder'))
+    # grant_funder_display_names = parse_list_string(safe_get_column(row, 'grants.funder_display_name'))
 
-#     for i in range(len(grant_award_ids)):
-#         grant_award_id = grant_award_ids[i] if i < len(grant_award_ids) else None
-#         if not grant_award_id:
-#             continue
-#         grant_hg_id = generate_hg_id(grant_award_id)
-#         grants_data_from_row.append({
-#             'hg_id': grant_hg_id,
-#             'award_id': grant_award_id,
-#             'funder': grant_funders[i] if i < len(grant_funders) else None,
-#             'funder_display_name': grant_funder_display_names[i] if i < len(grant_funder_display_names) else None
-#         })
-#         output_grants_data_from_row.append({
-#             'output_id': output_hg_id,
-#             'grant_id': grant_hg_id
-#         })
+    # for i in range(len(grant_award_ids)):
+    #     grant_award_id = grant_award_ids[i] if i < len(grant_award_ids) else None
+    #     if not grant_award_id:
+    #         continue
+    #     grant_hg_id = generate_hg_id(grant_award_id)
+    #     grants_data_from_row.append({
+    #         'hg_id': grant_hg_id,
+    #         'award_id': grant_award_id,
+    #         'funder': grant_funders[i] if i < len(grant_funders) else None,
+    #         'funder_display_name': grant_funder_display_names[i] if i < len(grant_funder_display_names) else None
+    #     })
+    #     output_grants_data_from_row.append({
+    #         'output_id': output_hg_id,
+    #         'grant_id': grant_hg_id
+    #     })
     
 #     # --- Transform Counts By Year ---
 #     years_str = safe_get_column(row, 'counts_by_year.year')
@@ -1476,7 +1477,7 @@ def run_etl():
             output_data = outputs_process_row(row)
             sdgs_data_from_row = sdgs_process_row(row)
             sources_data_from_row = source_process_row(row)
-         
+            output_grants_data_from_row= outputs_grand_data_process_row(row)
             
             output_authors_data_from_row = output_authors_process_row(row)
             output_external_ids_data_from_row = output_external_ids_process_row(row)
@@ -1548,8 +1549,8 @@ def run_etl():
                 #     collected_locations.append(loc) 
                 # for ws in output_sdgs_data_from_row:
                 #     collected_output_sdgs.add(make_hashable_for_set(ws))
-                # for wg in output_grants_data_from_row:
-                #     collected_output_grants.add(make_hashable_for_set(wg))
+                for wg in output_grants_data_from_row:
+                    collected_output_grants.add(make_hashable_for_set(wg))
                 # for wyc in output_yearly_counts_data_from_row:
                 #     collected_output_yearly_counts.add(make_hashable_for_set(wyc))
                 for wei in output_external_ids_data_from_row:
